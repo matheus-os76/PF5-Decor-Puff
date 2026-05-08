@@ -9,6 +9,7 @@ public class TelaLogin extends javax.swing.JFrame {
      */
     public TelaLogin() {
         initComponents();
+        this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
     }
 
     /**
@@ -29,50 +30,56 @@ public class TelaLogin extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMaximumSize(new java.awt.Dimension(300, 30));
+        setMinimumSize(new java.awt.Dimension(300, 30));
+        setPreferredSize(new java.awt.Dimension(300, 30));
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
+        txtUser.setMaximumSize(new java.awt.Dimension(300, 30));
+        txtUser.setMinimumSize(new java.awt.Dimension(300, 30));
+        txtUser.setPreferredSize(new java.awt.Dimension(300, 30));
         txtUser.addActionListener(this::txtUserActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 186;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.ipadx = 138;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 205, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 69, 0, 272);
         getContentPane().add(txtUser, gridBagConstraints);
 
+        txtPass.setMaximumSize(new java.awt.Dimension(300, 30));
+        txtPass.setMinimumSize(new java.awt.Dimension(300, 30));
+        txtPass.setPreferredSize(new java.awt.Dimension(300, 30));
         txtPass.addActionListener(this::txtPassActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 186;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.ipadx = 138;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 205, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 69, 0, 272);
         getContentPane().add(txtPass, gridBagConstraints);
 
         btnEntrar.setText("Entrar");
         btnEntrar.addActionListener(this::btnEntrarActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.ipadx = 3;
-        gridBagConstraints.ipady = 17;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 125, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 2, 120, 272);
         getContentPane().add(btnEntrar, gridBagConstraints);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("DECOR PUF");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.ipadx = 516;
-        gridBagConstraints.ipady = 78;
+        gridBagConstraints.ipadx = 176;
+        gridBagConstraints.ipady = 72;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(109, 14, 0, 0);
         getContentPane().add(jLabel1, gridBagConstraints);
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -82,7 +89,7 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.ipadx = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 205, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(34, 69, 0, 0);
         getContentPane().add(jLabel2, gridBagConstraints);
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -92,7 +99,7 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.ipadx = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(23, 205, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(23, 69, 0, 0);
         getContentPane().add(jLabel3, gridBagConstraints);
 
         pack();
