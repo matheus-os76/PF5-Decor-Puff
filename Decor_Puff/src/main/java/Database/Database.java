@@ -2,9 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Decor_Puff;
+package Database;
 
 import java.sql.*;
+import Database.Cliente.Cliente;
+
 
 /**
  *
@@ -28,7 +30,7 @@ public class Database {
             
             // <editor-fold defaultstate="collapsed" desc="Tabela Cliente"> 
             Estamento.addBatch("CREATE TABLE IF NOT EXISTS Cliente ("
-                               + "ID INT PRIMARY KEY NOT NULL,"
+                               + "ID INTEGER PRIMARY KEY,"
                                + "CPF TEXT NOT NULL UNIQUE,"
                                + "nome TEXT NOT NULL,"
                                + "email TEXT NOT NULL,"
@@ -99,9 +101,28 @@ public class Database {
                 
     }
     
-    public String getCaminho()
+    public void addCliente(Cliente c)
     {
-        return this.Caminho;
+        try 
+        {
+            
+            Statement stmt = Conexao.createStatement();
+            
+            var h = String.format("INSERT INTO Cliente (CPF, nome, email, telefone) VALUES ('%s', '%s', '%s', '%s')", 
+                    c.CPF.toString(), 
+                    c.Nome, 
+                    c.Email, 
+                    c.Telefone);
+            
+            System.out.println(h);
+            stmt.execute(h);
+            
+            stmt.close();
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
     }
     
 }

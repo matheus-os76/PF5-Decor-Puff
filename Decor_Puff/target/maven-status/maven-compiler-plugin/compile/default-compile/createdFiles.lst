@@ -1,3 +1,5 @@
 Decor_Puff/TelaInicial.class
-Decor_Puff/Database.class
+Database/Cliente/CPF.class
 main.class
+Database/Cliente/Cliente.class
+Database/Database.class
