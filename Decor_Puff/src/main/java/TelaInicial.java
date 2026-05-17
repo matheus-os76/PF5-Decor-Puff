@@ -1,8 +1,15 @@
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Image;
+import java.net.URL;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -30,13 +37,15 @@ public class TelaInicial extends javax.swing.JFrame {
         new BoxLayout(Painel_catalogo, BoxLayout.Y_AXIS)
         );
 
-        for(int i = 1; i <= 10; i++) {
+        for(int i = 1; i <= 2; i++) {
 
         Painel_catalogo.add(
-        new Painel_Item_catalogo(
-            "Produto " + i,
-            "R$ " + (i * 10),
-            "Descrição"
+        new ItemCatalogo(
+        "Produto",
+        "R$ 100",
+        "Descrição",
+        "/imagens/mouse.jpeg"
+
         )
         );
         }
@@ -67,11 +76,6 @@ public class TelaInicial extends javax.swing.JFrame {
         Btn_limpar_lista = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         Painel_catalogo = new javax.swing.JPanel();
-        Painel_Item_catalogo = new javax.swing.JPanel();
-        produto_nome = new javax.swing.JLabel();
-        produto_preco = new javax.swing.JLabel();
-        Btn_comprar = new javax.swing.JButton();
-        produto_imagem = new javax.swing.JLabel();
         produto_descricao = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -82,11 +86,11 @@ public class TelaInicial extends javax.swing.JFrame {
         Painel_pedido.setLayout(Painel_pedidoLayout);
         Painel_pedidoLayout.setHorizontalGroup(
             Painel_pedidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 133, Short.MAX_VALUE)
+            .addGap(0, 223, Short.MAX_VALUE)
         );
         Painel_pedidoLayout.setVerticalGroup(
             Painel_pedidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 489, Short.MAX_VALUE)
+            .addGap(0, 518, Short.MAX_VALUE)
         );
 
         Btn_cadastrar_cliente.setText("Cadastrar Cliente");
@@ -104,6 +108,7 @@ public class TelaInicial extends javax.swing.JFrame {
                 Btn_cadastrar_produtoMousePressed(evt);
             }
         });
+        Btn_cadastrar_produto.addActionListener(this::Btn_cadastrar_produtoActionPerformed);
 
         Btn_cadastrar_funcionario.setText("Cadastrar Funcionario");
         Btn_cadastrar_funcionario.setActionCommand("CadastrarFuncionario");
@@ -143,118 +148,65 @@ public class TelaInicial extends javax.swing.JFrame {
         Painel_catalogo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         Painel_catalogo.setToolTipText("");
         Painel_catalogo.setLayout(new javax.swing.BoxLayout(Painel_catalogo, javax.swing.BoxLayout.LINE_AXIS));
+        Painel_catalogo.add(produto_descricao);
+
         jScrollPane1.setViewportView(Painel_catalogo);
         Painel_catalogo.getAccessibleContext().setAccessibleName("CatalogoContent");
-
-        Painel_Item_catalogo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        Painel_Item_catalogo.setPreferredSize(new java.awt.Dimension(200, 250));
-
-        Btn_comprar.setText("ADD");
-        Btn_comprar.setActionCommand("ADD");
-        Btn_comprar.addActionListener(this::Btn_comprarActionPerformed);
-
-        produto_imagem.setText("Imagem");
-
-        javax.swing.GroupLayout Painel_Item_catalogoLayout = new javax.swing.GroupLayout(Painel_Item_catalogo);
-        Painel_Item_catalogo.setLayout(Painel_Item_catalogoLayout);
-        Painel_Item_catalogoLayout.setHorizontalGroup(
-            Painel_Item_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Painel_Item_catalogoLayout.createSequentialGroup()
-                .addGroup(Painel_Item_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(Painel_Item_catalogoLayout.createSequentialGroup()
-                        .addGap(48, 48, 48)
-                        .addComponent(produto_nome))
-                    .addGroup(Painel_Item_catalogoLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(Painel_Item_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(produto_preco)
-                            .addGroup(Painel_Item_catalogoLayout.createSequentialGroup()
-                                .addComponent(produto_imagem, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(Painel_Item_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(Btn_comprar)
-                                    .addComponent(produto_descricao, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                .addContainerGap(191, Short.MAX_VALUE))
-        );
-        Painel_Item_catalogoLayout.setVerticalGroup(
-            Painel_Item_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Painel_Item_catalogoLayout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addComponent(produto_nome)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(Painel_Item_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(produto_imagem, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(produto_descricao, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(11, 11, 11)
-                .addComponent(produto_preco)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Btn_comprar)
-                .addContainerGap(347, Short.MAX_VALUE))
-        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(57, 57, 57)
-                .addComponent(Btn_cadastrar_cliente)
-                .addGap(59, 59, 59)
-                .addComponent(Btn_cadastrar_produto)
-                .addGap(56, 56, 56)
-                .addComponent(Btn_cadastrar_funcionario)
-                .addGap(31, 31, 31)
-                .addComponent(Relatorios)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(34, 34, 34)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 488, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 100, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(57, 57, 57)
+                        .addComponent(Btn_cadastrar_cliente, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(59, 59, 59)
+                        .addComponent(Btn_cadastrar_produto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(56, 56, 56)
+                        .addComponent(Btn_cadastrar_funcionario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(31, 31, 31)
+                        .addComponent(Relatorios, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(141, 141, 141))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(52, 52, 52)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Btn_limpar_lista)
                         .addGap(18, 18, 18)
                         .addComponent(Btn_finalizar_pedido))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(Painel_pedido, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(80, 80, 80)))
-                .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(Painel_Item_catalogo, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(Painel_pedido, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(17, 17, 17))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(27, 27, 27)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(74, 74, 74)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(Btn_cadastrar_cliente)
                             .addComponent(Btn_cadastrar_produto)
                             .addComponent(Btn_cadastrar_funcionario)
                             .addComponent(Relatorios))
                         .addGap(25, 25, 25)
-                        .addComponent(Painel_pedido, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 492, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(7, 7, 7)
+                        .addComponent(Painel_pedido, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Btn_finalizar_pedido)
-                    .addComponent(Btn_limpar_lista))
-                .addContainerGap(34, Short.MAX_VALUE))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(Painel_Item_catalogo, javax.swing.GroupLayout.PREFERRED_SIZE, 488, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(Btn_limpar_lista)
+                    .addComponent(Btn_finalizar_pedido))
+                .addContainerGap())
         );
 
         Btn_cadastrar_cliente.getAccessibleContext().setAccessibleName("CadastrarCliente");
         Btn_cadastrar_produto.getAccessibleContext().setAccessibleName("CadastrarProduto");
         Btn_cadastrar_funcionario.getAccessibleContext().setAccessibleName("CadastrarFuncionario");
-        Relatorios.getAccessibleContext().setAccessibleName("Relatorios");
         Btn_limpar_lista.getAccessibleContext().setAccessibleName("LimparLista");
 
         pack();
@@ -277,12 +229,7 @@ public class TelaInicial extends javax.swing.JFrame {
     }//GEN-LAST:event_RelatoriosMousePressed
 
     private void Btn_cadastrar_produtoMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_cadastrar_produtoMousePressed
-        Painel_catalogo.add(
-        new Painel_Item_catalogo("Novo Produto", "R$ 100","oi")
-        );
-
-        Painel_catalogo.revalidate();
-        Painel_catalogo.repaint();
+        
     }//GEN-LAST:event_Btn_cadastrar_produtoMousePressed
 
     private void Btn_cadastrar_funcionarioMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_cadastrar_funcionarioMousePressed
@@ -297,9 +244,14 @@ public class TelaInicial extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_Btn_finalizar_pedidoMousePressed
 
-    private void Btn_comprarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_comprarActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Btn_comprarActionPerformed
+    private void Btn_cadastrar_produtoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_cadastrar_produtoActionPerformed
+        Painel_catalogo.add(
+        new ItemCatalogo("Novo Produto", "R$ 100","oi","/imagens/mouse.jpeg")
+        );
+
+        Painel_catalogo.revalidate();
+        Painel_catalogo.repaint();
+    }//GEN-LAST:event_Btn_cadastrar_produtoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -328,34 +280,77 @@ public class TelaInicial extends javax.swing.JFrame {
     
     private void adicionar_Produtos() {
 
-        Painel_catalogo.add(new Painel_Item_catalogo("Mouse Gamer", "R$ 150","oi"));
+        Painel_catalogo.add(new ItemCatalogo("Mouse Gamer", "R$ 150","oi","/imagens/mouse.jpeg"));
 
-        Painel_catalogo.add(new Painel_Item_catalogo("Teclado Mecânico", "R$ 300","oi"));
+        Painel_catalogo.add(new ItemCatalogo("Teclado Mecânico", "R$ 300","oi","/imagens/mouse.jpeg"));
 
-        Painel_catalogo.add(new Painel_Item_catalogo("Monitor 24", "R$ 900","oi"));
+        Painel_catalogo.add(new ItemCatalogo("Monitor 24", "R$ 900","oi","/imagens/mouse.jpeg"));
 
         Painel_catalogo.revalidate();
         Painel_catalogo.repaint();
     }
-    public class Painel_Item_catalogo extends javax.swing.JPanel {
+    public class ItemCatalogo extends JPanel {
+        private JLabel imagemLabel;
+        private JLabel nomeLabel;
+        private JLabel precoLabel;
+        private JLabel descricaoLabel;
+        private JButton botao;    
+    
+        public ItemCatalogo(String nome, String preco, String descricao,String caminhoImagem) {
+            setLayout(new BorderLayout());
 
-    public Painel_Item_catalogo(String nome, String preco, String descricao) {
-        initComponents();
-        setPreferredSize(new Dimension(600, 120));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+            imagemLabel = new JLabel();
+            URL url = getClass().getResource("/imagens/mouse.jpeg");
 
-        setMaximumSize(new Dimension(
-        Integer.MAX_VALUE,
-        120
-        ));
+            if(url == null){
+                System.out.println("Imagem não encontrada");
+            } else {
 
-       
-        produto_nome.setText(nome);
-        produto_preco.setText(preco);
-        produto_descricao.setText(descricao);
-        
+                ImageIcon icon = new ImageIcon(url);
+
+                Image imagem = icon.getImage().getScaledInstance(
+                    100,
+                    100,
+                    Image.SCALE_SMOOTH
+                );
+
+                imagemLabel.setIcon(new ImageIcon(imagem));
+            }
+            System.out.println(getClass().getResource("/imagens/mouse.jpeg"));
+            ImageIcon icon = new ImageIcon(
+            getClass().getResource(caminhoImagem)
+            );
+            Image imagem = icon.getImage().getScaledInstance(
+            100,
+            100,
+            Image.SCALE_SMOOTH
+            );
+            imagemLabel.setIcon(new ImageIcon(imagem)); 
+            
+            JPanel textoPanel = new JPanel();
+            textoPanel.setLayout(new BoxLayout(
+            textoPanel,
+            BoxLayout.Y_AXIS
+            ));
+
+            nomeLabel = new JLabel(nome);
+            precoLabel = new JLabel(preco);
+            descricaoLabel = new JLabel(descricao);
+            botao = new JButton("Adicionar");
+
+            textoPanel.add(nomeLabel);
+            textoPanel.add(precoLabel);
+            textoPanel.add(descricaoLabel);
+
+            add(imagemLabel, BorderLayout.WEST);
+            add(textoPanel, BorderLayout.CENTER);
+            add(botao, BorderLayout.EAST);
+        }
+
         
     }
-    }
+    
     
     // vi esse codigo para puchar do banco de dados as informações ps:não sei se funciona
    // while(rs.next()) {;;
@@ -372,17 +367,13 @@ public class TelaInicial extends javax.swing.JFrame {
     private javax.swing.JButton Btn_cadastrar_cliente;
     private javax.swing.JButton Btn_cadastrar_funcionario;
     private javax.swing.JButton Btn_cadastrar_produto;
-    private javax.swing.JButton Btn_comprar;
     private javax.swing.JButton Btn_finalizar_pedido;
     private javax.swing.JButton Btn_limpar_lista;
-    private javax.swing.JPanel Painel_Item_catalogo;
     private javax.swing.JPanel Painel_catalogo;
     private javax.swing.JPanel Painel_pedido;
     private javax.swing.JButton Relatorios;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel produto_descricao;
-    private javax.swing.JLabel produto_imagem;
-    private javax.swing.JLabel produto_nome;
-    private javax.swing.JLabel produto_preco;
     // End of variables declaration//GEN-END:variables
 }
+
