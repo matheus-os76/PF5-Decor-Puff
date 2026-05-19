@@ -1,6 +1,6 @@
-import Database.Cliente.Cliente;
+import Cliente.CPF;
+import Cliente.Cliente;
 import Database.*;
-import Database.Cliente.*;
 import com.github.javafaker.Faker;
 
 public static void main(String [] args)
@@ -9,9 +9,11 @@ public static void main(String [] args)
     Database b = new Database("Database");
     
     
-    try {
-
-        b.addCliente(Cliente.gerarAleatorio());
+    try 
+    {
+        var x = b.getCliente(new CPF("053.017.093-95"));
+        
+        System.out.println(x);
     } catch (Exception e)
     {
         e.printStackTrace();

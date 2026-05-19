@@ -4,8 +4,9 @@
  */
 package Database;
 
+import Cliente.*;
+import Funcionario.*;
 import java.sql.*;
-import Database.Cliente.Cliente;
 
 
 /**
@@ -101,22 +102,20 @@ public class Database {
                 
     }
     
+    // <editor-fold defaultstate="collapsed" desc="Metodos Cliente">
     public void addCliente(Cliente c)
     {
         try 
         {
             
-            Statement stmt = Conexao.createStatement();
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Cliente (CPF, nome, email, telefone) VALUES (?, ?, ?, ?)");
             
-            var h = String.format("INSERT INTO Cliente (CPF, nome, email, telefone) VALUES ('%s', '%s', '%s', '%s')", 
-                    c.CPF.toString(), 
-                    c.Nome, 
-                    c.Email, 
-                    c.Telefone);
+            stmt.setString(1, c.CPF.toString());
+            stmt.setString(2, c.Nome);
+            stmt.setString(3, c.Email);
+            stmt.setString(4, c.Telefone);
             
-            System.out.println(h);
-            stmt.execute(h);
-            
+            stmt.execute();
             stmt.close();
         } 
         catch (SQLException e) 
@@ -124,5 +123,261 @@ public class Database {
             e.printStackTrace();
         }
     }
+    
+    public Cliente getCliente(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM Cliente WHERE ID = ?");
+            
+            stmt.setInt(1, id);
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {      
+                try
+                {
+                    return new Cliente(
+                            id, 
+                            new CPF(resultado.getString("CPF")), 
+                            resultado.getString("nome"), 
+                            resultado.getString("email"), 
+                            resultado.getString("telefone")
+                    );
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            resultado.close();
+            stmt.close();
+            
+            return null;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public Cliente getCliente(CPF cpf)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM Cliente WHERE CPF = ?");
+            
+            stmt.setString(1, cpf.toString());
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {      
+                try
+                {
+                    return new Cliente(
+                            resultado.getInt("ID"), 
+                            cpf, 
+                            resultado.getString("nome"), 
+                            resultado.getString("email"), 
+                            resultado.getString("telefone")
+                    );
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            resultado.close();
+            stmt.close();
+            
+            return null;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public Cliente updateCliente(Cliente c)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("UPDATE Cliente SET CPF = ?, nome = ?, email = ?, telefone = ? WHERE ID = ?");
+            
+            stmt.setString(1, c.CPF.toString());
+            stmt.setString(2, c.Nome);
+            stmt.setString(3, c.Email);
+            stmt.setString(4, c.Telefone);
+            
+            stmt.setInt(5, c.ID);
+            
+            stmt.executeUpdate();
+            stmt.close();
+            
+            return c;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public boolean delCliente(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM Cliente WHERE ID = ?");
+            
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+            
+            stmt.close();
+            return true;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+
+    public boolean delCliente(Cliente c)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM Cliente CPF = ?");
+            
+            stmt.setString(1, c.CPF.toString());
+            stmt.executeUpdate();
+            
+            stmt.close();
+            return true;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+    // </editor-fold> 
+    
+    // <editor-fold defaultstate="collapsed" desc="Metodos Funcionario">
+    public void addFuncionario(Funcionario f)
+    {
+        try 
+        {
+            
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Funcionario (nome, email, cargo, username, password) VALUES (?, ?, ?, ?, ?)");
+            
+            stmt.setString(1, f.Nome);
+            stmt.setString(2, f.Email);
+            stmt.setString(3, f.Cargo);
+            stmt.setString(4, f.Usuario);
+            stmt.setString(5, f.Senha);
+            
+            stmt.execute();
+            stmt.close();
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    public Funcionario getFuncionario(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM Funcionario WHERE ID = ?");
+            
+            stmt.setInt(1, id);
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {      
+                try
+                {
+                    return new Funcionario(
+                            id,
+                            resultado.getString("nome"),
+                            resultado.getString("email"),
+                            resultado.getString("cargo"),
+                            resultado.getString("usuario"),
+                            resultado.getString("senha")
+                    );
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            resultado.close();
+            stmt.close();
+            
+            return null;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public Funcionario updateFuncionario(Funcionario f)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("UPDATE Funcionario SET nome = ?, email = ?, cargo = ?, usuario = ?, senha = ? WHERE ID = ?");
+            
+            stmt.setString(1, f.Nome);
+            stmt.setString(2, f.Email);
+            stmt.setString(3, f.Cargo);
+            stmt.setString(4, f.Usuario);
+            stmt.setString(5, f.Senha);
+            
+            stmt.setInt(6, f.ID);
+            
+            stmt.executeUpdate();
+            stmt.close();
+            
+            return f;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public boolean delFuncionario(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM Funcionario WHERE ID = ?");
+            
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+            
+            stmt.close();
+            return true;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+    // </editor-fold> 
     
 }

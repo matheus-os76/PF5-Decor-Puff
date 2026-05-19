@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Database.Cliente;
+package Cliente;
 
 import java.util.Random;
 
@@ -26,7 +26,7 @@ public class CPF {
             throw new Exception("CPF inválido");
         }
         
-        this.Digitos_unicos = cpf.substring(0, 7);
+        this.Digitos_unicos = cpf.substring(0, 8);
         this.Digito_origem = cpf.charAt(8);
         this.Digitos_verificadores = cpf.substring(9, 11).toCharArray();
     }
@@ -47,11 +47,12 @@ public class CPF {
     
     public String toString()
     {
-        return String.format("%03d.%03d.%02d%c-%02d",
-                        Integer.parseInt(this.Digitos_unicos.subSequence(0, 2).toString()),
-                        Integer.parseInt(this.Digitos_unicos.subSequence(3, 5).toString()),
-                        Integer.parseInt(this.Digitos_unicos.subSequence(6, 7).toString()), this.Digito_origem,
-                        Integer.parseInt(String.valueOf(this.Digitos_verificadores))
+        return String.format("%s.%s.%s%s-%s",
+                        this.Digitos_unicos.substring(0, 3),
+                        this.Digitos_unicos.substring(3, 6),
+                        this.Digitos_unicos.substring(6, 8),
+                        this.Digito_origem,
+                        String.valueOf(this.Digitos_verificadores)
         );
     }
 
