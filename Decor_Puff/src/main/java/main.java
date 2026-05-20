@@ -1,19 +1,22 @@
-import Cliente.CPF;
-import Cliente.Cliente;
-import Database.*;
-import com.github.javafaker.Faker;
+import Database.DatabaseFaker;
 
 public static void main(String [] args)
 { 
     
-    Database b = new Database("Database");
-    
-    
     try 
     {
-        var x = b.getCliente(new CPF("053.017.093-95"));
+        var a = DatabaseFaker.CPF();
+        var b = DatabaseFaker.Cliente();
+        var c = DatabaseFaker.Funcionario();
+        var d = DatabaseFaker.Item();
+//        var e = DatabaseFaker.Pedido(b, c);
         
-        System.out.println(x);
+        System.out.println(a);
+        System.out.println(b);
+        System.out.println(c);
+        System.out.println(d);
+//        System.out.println(e);
+        
     } catch (Exception e)
     {
         e.printStackTrace();

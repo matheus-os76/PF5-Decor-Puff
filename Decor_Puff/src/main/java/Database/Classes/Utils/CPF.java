@@ -2,9 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Cliente;
-
-import java.util.Random;
+package Database.Classes.Utils;
 
 /**
  *
@@ -40,7 +38,7 @@ public class CPF {
         
         String cpf_string = String.format("%011d", cpf);
         
-        this.Digitos_unicos = cpf_string.substring(0, 7);
+        this.Digitos_unicos = cpf_string.substring(0, 8);
         this.Digito_origem = cpf_string.charAt(8);
         this.Digitos_verificadores = cpf_string.substring(9, 11).toCharArray();
     }
@@ -54,17 +52,5 @@ public class CPF {
                         this.Digito_origem,
                         String.valueOf(this.Digitos_verificadores)
         );
-    }
-
-    public static CPF gerarAleatorio()
-    {
-        try {
-            Random rand = new Random();
-            return new CPF(rand.nextLong(0, MAXIMO_CPF));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        
     }
 }

@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Cliente;
+package Database.Classes;
 
+import Database.Classes.Utils.CPF;
 import com.github.javafaker.Faker;
 import java.util.Locale;
 
@@ -21,6 +22,7 @@ public class Cliente {
     
     public Cliente(int id, CPF cpf, String nome, String email, String telefone) throws Exception
     {
+        
         this.ID = id;
         this.CPF = cpf;
         this.Nome = nome;
@@ -35,20 +37,6 @@ public class Cliente {
         this.Nome = nome;
         this.Email = email;
         this.Telefone = telefone;
-    }
-    
-    public static Cliente gerarAleatorio()
-    {
-        try {
-            Faker f = new Faker(new Locale("pt", "BR"));
-            
-            CPF cpf_faker = new CPF(f.number().numberBetween(0, 99999999999L));
-            
-            return new Cliente(cpf_faker, f.name().fullName(), f.internet().emailAddress(), f.phoneNumber().cellPhone());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
     }
     
     public String toString()
