@@ -10,6 +10,9 @@ import java.util.Locale;
 import Database.Classes.*;
 import Database.Classes.Utils.*;
 import java.sql.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
 /**
  *
@@ -82,20 +85,35 @@ public class DatabaseFaker {
         );
     }
     
-//    public static Pedido Pedido(Cliente c, Funcionario f)
-//    {
-//        double servico = faker.number().randomDouble(2, 1L, 100L);
-//        double frete = faker.number().randomDouble(2, 1L, 100L);
-//        
-//        return new Pedido(
-//                c, 
-//                f, 
-//                new Date(faker.date().past(1, TimeUnit.DAYS).getTime()),
-//                servico, 
-//                frete, 
-//                servico + frete, 
-//                Status_Pedido.values()[0]
-//        );
-//    }
+    public static Pedido Pedido(Cliente c, Funcionario f)
+    {
+        double servico = faker.number().randomDouble(2, 1L, 100L);
+        double frete = faker.number().randomDouble(2, 1L, 100L);
+        
+        return new Pedido(
+                c, 
+                f, 
+                faker.date().past(1, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                servico, 
+                frete, 
+                servico + frete, 
+                Status_Pedido.values()[faker.random().nextInt(0, (Status_Pedido.values().length)-1)]
+        );
+    }
+    
+    public static PedidoItem PedidoItem(Pedido p, Item i)
+    {
+        return new PedidoItem(p, i, faker.random().nextInt(1, 100));
+    }
+    
+    public static LogSistema LogSistema(Funcionario f, Item i)
+    {
+        return new LogSistema(
+                i, 
+                f, 
+                faker.lorem().sentence(faker.random().nextInt(3, 12)), 
+                faker.date().past(1, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+        );
+    }
         
 }

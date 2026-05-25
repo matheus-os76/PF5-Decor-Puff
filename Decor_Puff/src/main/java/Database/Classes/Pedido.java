@@ -54,12 +54,12 @@ public class Pedido {
         this.Data_SQL = Date.valueOf(this.Data.toLocalDate());
     }
     
-        public Pedido(Cliente c, Funcionario f, Date data, double valor_servico, double valor_frete, double subtotal, Status_Pedido status)
+        public Pedido(Cliente c, Funcionario f, java.sql.Date data, double valor_servico, double valor_frete, double subtotal, Status_Pedido status)
     {
         this.ID = 0;
         this.cliente = c;
         this.funcionario = f;
-        this.Data = LocalDateTime.ofInstant(data.toInstant(), ZoneId.systemDefault());
+        this.Data = data.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         this.Valor_Servico = valor_servico;
         this.Valor_Frete = valor_frete;
         this.Subtotal = subtotal;
@@ -71,5 +71,19 @@ public class Pedido {
     public Date getDateSQL()
     {
         return this.Data_SQL;
+    }
+    
+    public String toString()
+    {
+        return String.format("Pedido(%d, %s, %s, %s, %.2f, %.2f, %.2f, %s)", 
+                                this.ID,
+                                this.cliente.Nome,
+                                this.funcionario.Nome,
+                                this.Data.toString(),
+                                this.Valor_Servico,
+                                this.Valor_Frete,
+                                this.Subtotal,
+                                this.Status
+                                );
     }
 }
