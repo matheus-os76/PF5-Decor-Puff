@@ -1,8 +1,10 @@
+import Database.*;
 import javax.swing.JOptionPane;
 
 public class TelaLogin extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TelaLogin.class.getName());
+    private static final Database DB = new Database("Database");
 
     /**
      * Creates new form TelaLogin
@@ -43,10 +45,10 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.ipadx = 138;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 88, 0, 88);
+        gridBagConstraints.insets = new java.awt.Insets(6, 139, 0, 140);
         getContentPane().add(input_Usuario, gridBagConstraints);
         input_Usuario.getAccessibleContext().setAccessibleName("input_Usuario");
 
@@ -56,10 +58,10 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.ipadx = 138;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 88, 0, 88);
+        gridBagConstraints.insets = new java.awt.Insets(6, 139, 0, 140);
         getContentPane().add(input_Senha, gridBagConstraints);
         input_Senha.getAccessibleContext().setAccessibleName("input_Senha");
 
@@ -70,7 +72,7 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 88, 51, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 139, 74, 0);
         getContentPane().add(btn_Cadastrar, gridBagConstraints);
         btn_Cadastrar.getAccessibleContext().setAccessibleName("btn_Cadastrar");
 
@@ -78,10 +80,12 @@ public class TelaLogin extends javax.swing.JFrame {
         lab_Decor_Puf.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lab_Decor_Puf.setText("DECOR PUF");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.ipadx = 243;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(119, 26, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(142, 139, 0, 140);
         getContentPane().add(lab_Decor_Puf, gridBagConstraints);
         lab_Decor_Puf.getAccessibleContext().setAccessibleName("lab_Decor_Puf");
 
@@ -92,7 +96,7 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.ipadx = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(119, 88, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(119, 139, 0, 0);
         getContentPane().add(lab_Usuario, gridBagConstraints);
         lab_Usuario.getAccessibleContext().setAccessibleName("lab_Usuario");
 
@@ -103,17 +107,17 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.ipadx = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(23, 88, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(23, 139, 0, 0);
         getContentPane().add(lab_Senha, gridBagConstraints);
         lab_Senha.getAccessibleContext().setAccessibleName("lab_Senha");
 
         btn_Entrar.setText("Entrar");
         btn_Entrar.addActionListener(this::btn_EntrarActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 50, 51, 88);
+        gridBagConstraints.insets = new java.awt.Insets(18, 271, 74, 140);
         getContentPane().add(btn_Entrar, gridBagConstraints);
         btn_Entrar.getAccessibleContext().setAccessibleName("btn_Entrar");
 
@@ -126,7 +130,7 @@ public class TelaLogin extends javax.swing.JFrame {
 
         this.dispose();
         
-        TelaCadastrarCliente cadastrar = new TelaCadastrarCliente();
+        TelaCadastrarCliente cadastrar = new TelaCadastrarCliente(DB);
         
         cadastrar.setVisible(true);
     }//GEN-LAST:event_btn_CadastrarActionPerformed
@@ -136,7 +140,7 @@ public class TelaLogin extends javax.swing.JFrame {
         String usuario = input_Usuario.getText();
         String senha = new String(input_Senha.getPassword());
         
-        if (false) {
+        if (DB.getFuncionario(usuario, senha) != null) {
             JOptionPane.showMessageDialog(this, "Login efetuado com sucesso!\nBem-vindo à Decor Puf.");     
         } else {
             JOptionPane.showMessageDialog(this, "Usuário ou senha incorretos!", "Erro de Autenticação", JOptionPane.ERROR_MESSAGE);

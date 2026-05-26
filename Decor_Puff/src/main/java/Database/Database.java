@@ -331,6 +331,47 @@ public class Database {
         return null;
     }
     
+    public Funcionario getFuncionario(String usuario, String senha)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM Funcionario WHERE usuario = ? AND senha = ?");
+            
+            stmt.setString(1, usuario);
+            stmt.setString(2, senha);
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {      
+                try
+                {
+                    return new Funcionario(
+                            resultado.getInt("ID"),
+                            resultado.getString("nome"),
+                            resultado.getString("email"),
+                            Cargo.valueOf(resultado.getString("cargo")),
+                            usuario,
+                            senha
+                    );
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            resultado.close();
+            stmt.close();
+            
+            return null;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
     public Funcionario updateFuncionario(Funcionario f)
     {
         try 

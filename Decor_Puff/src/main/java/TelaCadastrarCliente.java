@@ -1,4 +1,7 @@
 
+import Database.Classes.Cliente;
+import Database.Classes.Utils.CPF;
+import Database.Database;
 import javax.swing.JOptionPane;
 
 /*
@@ -13,11 +16,13 @@ import javax.swing.JOptionPane;
 public class TelaCadastrarCliente extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TelaCadastrarCliente.class.getName());
+    private static Database DB;
 
     /**
      * Creates new form TelaCadastrarCliente
      */
-    public TelaCadastrarCliente() {
+    public TelaCadastrarCliente(Database db) {
+        DB = db;
         initComponents();
         this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
     }
@@ -179,15 +184,13 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
         String nome = input_Nome.getText().trim();
         String email = input_Email.getText().trim();
         String telefone = input_Telefone.getText();
-        String cpf = input_CPF.getText();
         
-//        JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos corretamente.", "Aviso", JOptionPane.WARNING_MESSAGE);
-//        input_Nome.setText("");
-//        input_Email.setText("");
-//        input_Telefone.setText("");
-//        input_CPF.setText("");
-//        input_Nome.requestFocus();
-        
+        try {
+            CPF cpf = new CPF(input_CPF.getText());
+            Cliente c = new Cliente(cpf, nome, email, telefone);
+        } catch (Exception ex) {
+            System.getLogger(TelaCadastrarCliente.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
         
     }//GEN-LAST:event_btn_CadastrarActionPerformed
 
@@ -223,7 +226,7 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
         /* Create and display the form */
        java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TelaCadastrarCliente().setVisible(true);
+                new TelaCadastrarCliente(DB).setVisible(true);
             }
         });
     }
