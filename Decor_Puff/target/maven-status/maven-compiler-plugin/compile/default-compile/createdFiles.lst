@@ -1,4 +1,3 @@
-main.class
 Database/Classes/Item.class
 Database/Database.class
 Database/Classes/Utils/Status_Pedido.class
@@ -12,3 +11,6 @@ Database/Classes/Utils/Status_Item.class
 Database/DatabaseFaker.class
 Database/Classes/Cliente.class
 Database/Classes/Utils/Cargo.class
+TelaCadastrarCliente.class
+TelaLogin.class
+TelaCadastrarCliente$1.class
