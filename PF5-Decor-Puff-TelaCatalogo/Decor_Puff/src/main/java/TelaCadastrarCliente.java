@@ -154,7 +154,6 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
         getContentPane().add(txtTelefone, gridBagConstraints);
 
         btnCadastrar.setText("Cadastrar");
-        btnCadastrar.addActionListener(this::btnCadastrarActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 9;
@@ -164,12 +163,6 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
         getContentPane().add(btnCadastrar, gridBagConstraints);
 
         Btn_voltar.setText("Voltar");
-        Btn_voltar.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                Btn_voltarMouseClicked(evt);
-            }
-        });
-        Btn_voltar.addActionListener(this::Btn_voltarActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -180,69 +173,6 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnCadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCadastrarActionPerformed
-        // TODO add your handling code here:
-        String nome = txtNome.getText().trim();
-        String email = txtEmail.getText().trim();
-        String telefone = txtTelefone.getText();
-        String cpf = txtCpf.getText();
-        
-       String cpfSemMascara = cpf.replace(".", "").replace("-", "").trim();
-        String telSemMascara = telefone.replace("(", "").replace(")", "").replace("-", "").replace(" ", "").trim();
-        
-        if (nome.isEmpty() || email.isEmpty() || telSemMascara.length() < 10 || cpfSemMascara.length() != 11) {
-            JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos corretamente.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        if (nome.length() < 3 || nome.length() > 100) {
-            JOptionPane.showMessageDialog(this, "Erro: O nome deve ter entre 3 e 100 caracteres.", "Tamanho Inválido", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        if (nome.matches(".*\\d.*")) {
-            JOptionPane.showMessageDialog(this, "Erro: O nome não pode conter números.", "Nome Inválido", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        if (email.length() > 100) {
-            JOptionPane.showMessageDialog(this, "Erro: O e-mail ultrapassa o limite de 100 caracteres.", "E-mail muito longo", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        if (!email.isEmpty() && (!email.contains("@") || !email.contains("."))) {
-            JOptionPane.showMessageDialog(this, "Por favor, digite um e-mail válido (ex: nome@email.com).", "E-mail Inválido", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        
-            boolean dadosJaExistemNoBanco = false; 
-        
-            if (dadosJaExistemNoBanco) {
-            JOptionPane.showMessageDialog(this, "Erro: Este CPF, E-mail ou Telefone já está cadastrado no sistema!", "Cadastro Duplicado", JOptionPane.ERROR_MESSAGE);
-            
-        } else {
-            JOptionPane.showMessageDialog(this, "Cliente " + nome + " cadastrado com sucesso!");
-            
-            txtNome.setText("");
-            txtEmail.setText("");
-            txtTelefone.setText("");
-            txtCpf.setText("");
-            txtNome.requestFocus();
-        }
-        
-    }//GEN-LAST:event_btnCadastrarActionPerformed
-
-    private void Btn_voltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_voltarActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Btn_voltarActionPerformed
-
-    private void Btn_voltarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_voltarMouseClicked
-        TelaCatalogo tela = new TelaCatalogo();
-        tela.setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_Btn_voltarMouseClicked
 
     /**
      * @param args the command line arguments
