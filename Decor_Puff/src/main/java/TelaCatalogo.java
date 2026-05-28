@@ -51,7 +51,6 @@ public class TelaCatalogo extends javax.swing.JFrame {
         )
         );
         }
-        
         Painel_catalogo.revalidate();
         Painel_catalogo.repaint();
         adicionar_Produtos();
@@ -83,6 +82,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
         Btn_login = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         Painel_pedido = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -143,18 +143,22 @@ public class TelaCatalogo extends javax.swing.JFrame {
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(800, 600));
 
-        Painel_catalogo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        Painel_catalogo.setBorder(javax.swing.BorderFactory.createLineBorder(null));
         Painel_catalogo.setToolTipText("");
 
         javax.swing.GroupLayout Painel_catalogoLayout = new javax.swing.GroupLayout(Painel_catalogo);
         Painel_catalogo.setLayout(Painel_catalogoLayout);
         Painel_catalogoLayout.setHorizontalGroup(
             Painel_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(produto_descricao)
+            .addGroup(Painel_catalogoLayout.createSequentialGroup()
+                .addComponent(produto_descricao)
+                .addGap(761, 761, 761))
         );
         Painel_catalogoLayout.setVerticalGroup(
             Painel_catalogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(produto_descricao)
+            .addGroup(Painel_catalogoLayout.createSequentialGroup()
+                .addComponent(produto_descricao)
+                .addGap(542, 542, 542))
         );
 
         jScrollPane1.setViewportView(Painel_catalogo);
@@ -163,7 +167,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
         Btn_login.setText("Login");
         Btn_login.addActionListener(this::Btn_loginActionPerformed);
 
-        Painel_pedido.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        Painel_pedido.setBorder(javax.swing.BorderFactory.createLineBorder(null));
 
         javax.swing.GroupLayout Painel_pedidoLayout = new javax.swing.GroupLayout(Painel_pedido);
         Painel_pedido.setLayout(Painel_pedidoLayout);
@@ -177,6 +181,9 @@ public class TelaCatalogo extends javax.swing.JFrame {
         );
 
         jScrollPane2.setViewportView(Painel_pedido);
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel1.setText("      Lista de produtos");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -195,19 +202,23 @@ public class TelaCatalogo extends javax.swing.JFrame {
                         .addComponent(PedidoRealizados, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(82, 82, 82)
+                        .addComponent(Btn_login)
+                        .addGap(84, 84, 84))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(59, 59, 59)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(Btn_limpar_lista)
+                                    .addGap(29, 29, 29)
+                                    .addComponent(Btn_finalizar_pedido))
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(Btn_limpar_lista)
-                                .addGap(29, 29, 29)
-                                .addComponent(Btn_finalizar_pedido))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Btn_login)
-                        .addGap(84, 84, 84))))
+                                .addGap(10, 10, 10)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -221,8 +232,12 @@ public class TelaCatalogo extends javax.swing.JFrame {
                     .addComponent(Btn_login, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 507, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Btn_finalizar_pedido)
@@ -295,6 +310,18 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_cadastrar_clienteActionPerformed
 
     private void Btn_limpar_listaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_limpar_listaMouseClicked
+    for (Pedido pedido : listaPedidos) {
+        for (java.awt.Component comp : Painel_catalogo.getComponents()) {  
+            if (comp instanceof ItemCatalogo) {
+                ItemCatalogo item = (ItemCatalogo) comp;
+                if (item.getNomeProduto().equals(pedido.getNome())) {
+                    item.devolverEstoque(1); 
+                    break; 
+                }
+            }
+        }
+    }
+        listaPedidos.clear();
         Painel_pedido.removeAll();
         Painel_pedido.revalidate();
         Painel_pedido.repaint();
@@ -385,6 +412,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
         private JPanel painelPedido;
     
         public ItemCatalogo(String nome, String preco, String descricao,String caminhoImagem,String quantidade,JPanel painelPedido) {
+            
             setAlignmentX(LEFT_ALIGNMENT);
             setLayout(new BorderLayout());
             
@@ -436,57 +464,77 @@ public class TelaCatalogo extends javax.swing.JFrame {
             botao.setPreferredSize(new Dimension(100, 40));
             painelBotao.add(botao);
             add(painelBotao, BorderLayout.EAST);
-            
-            
-            
-            
+ 
             botao.addActionListener(e -> {
+            try {
+            String textoApenasNumeros = quantidadeLabel.getText().replaceAll("[^0-9]", "");
+            int quantidadeAtual = Integer.parseInt(textoApenasNumeros);
+            if (quantidadeAtual <= 0) {
+            javax.swing.JOptionPane.showMessageDialog(null, "Este produto esgotou no catálogo!");
+            return; 
+            }
+            quantidadeAtual--;
+            quantidadeLabel.setText("Quantidade: " + quantidadeAtual);
+            this.revalidate();
+            this.repaint();
             Pedido pedido = new Pedido(nome, preco, 1);
             listaPedidos.add(pedido);
+        
             JPanel itemPedido = new JPanel();
             itemPedido.setLayout(new BoxLayout(itemPedido, BoxLayout.X_AXIS));
             itemPedido.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
             JLabel item = new JLabel(nome + " - " + preco);
             JButton remover = new JButton("X");
             remover.setPreferredSize(new Dimension(45, 30));
-
             remover.setMaximumSize(new Dimension(45, 30));
 
             itemPedido.add(item);
             itemPedido.add(Box.createHorizontalGlue());
             itemPedido.add(remover);
             painelPedido.add(itemPedido);
+        
+        // Atualiza visualmente o painel de pedidos
             painelPedido.revalidate();
             painelPedido.repaint();
-            remover.addActionListener(ev -> {
-
-            painelPedido.remove(itemPedido);
-
+        
+            remover.addActionListener(rev -> {
             listaPedidos.remove(pedido);
-
+            painelPedido.remove(itemPedido);
+            String textoQtdRemover = quantidadeLabel.getText().replaceAll("[^0-9]", "");
+            int qtdAoRemover = Integer.parseInt(textoQtdRemover);
+            qtdAoRemover++;
+            
+            quantidadeLabel.setText("Quantidade: " + qtdAoRemover);
+            this.revalidate();
+            this.repaint();
             painelPedido.revalidate();
             painelPedido.repaint();
-
             });
 
-        });
-        }
+            } catch (Exception ex) {
+            // Se der qualquer outro erro oculto, este aviso vai te dizer o que foi
+            javax.swing.JOptionPane.showMessageDialog(null, "Erro ao processar: " + ex.getMessage());
+            }
+            });
 
         
+            }
+    public void devolverEstoque(int quantidadeParaDevolver) {
+        String textoApenasNumeros = quantidadeLabel.getText().replaceAll("[^0-9]", "");
+        int quantidadeAtual = Integer.parseInt(textoApenasNumeros);
+        quantidadeAtual += quantidadeParaDevolver;
+        quantidadeLabel.setText("Quantidade: " + quantidadeAtual);
+    
+        this.revalidate();
+        this.repaint();
+    }
+
+
+    public String getNomeProduto() {
+        return nomeLabel.getText();
+    }
     }
     
-    
-    // vi esse codigo para puchar do banco de dados as informações ps:não sei se funciona
-   // while(rs.next()) {;;
-
-    //String nome = rs.getString("nome");
-    //String preco = rs.getString("preco");
-    //String descricao = rs.getString("descricao");
-    //Painel_catalogo.add(
-       // new Painel_Item_catalogo(nome, preco,descricao)
-    //);
-    //}  
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Btn_cadastrar_cliente;
     private javax.swing.JButton Btn_cadastrar_funcionario;
@@ -497,6 +545,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     private javax.swing.JPanel Painel_catalogo;
     private javax.swing.JPanel Painel_pedido;
     private javax.swing.JButton PedidoRealizados;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel produto_descricao;
