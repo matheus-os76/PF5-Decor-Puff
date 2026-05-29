@@ -1,4 +1,6 @@
 
+import Database.Classes.Item;
+import Database.Database;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -31,32 +33,21 @@ public class TelaCatalogo extends javax.swing.JFrame {
     /**
      * Creates new form TelaInicial
      */
-    
-    public TelaCatalogo() {
+    private static Database DB;
+    public TelaCatalogo(Database db) {
+        DB = db;
         initComponents();
         
         Painel_catalogo.setLayout(new BoxLayout(Painel_catalogo, BoxLayout.Y_AXIS));
         Painel_pedido.setLayout(new BoxLayout(Painel_pedido, BoxLayout.Y_AXIS));
         Painel_catalogo.setAlignmentX(LEFT_ALIGNMENT);
         
-        for(int i = 1; i <= 2; i++) {
-        Painel_catalogo.add(
-        new ItemCatalogo(
-        "Produto",
-        "R$ 100",
-        "Descrição",
-        "/imagens/mouse.jpeg",
-        "5",
-        Painel_pedido
-        )
-        );
-        }
-        Painel_catalogo.revalidate();
-        Painel_catalogo.repaint();
         adicionar_Produtos();
+
         System.out.println(Painel_catalogo.getComponentCount());
-        
     }
+        
+    
    
 
     
@@ -258,7 +249,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_limpar_listaActionPerformed
 
     private void Btn_finalizar_pedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_finalizar_pedidoActionPerformed
-       TelaFinalizarPedido tela = new TelaFinalizarPedido(listaPedidos);
+       TelaFinalizarPedido tela = new TelaFinalizarPedido(listaPedidos,DB);
        tela.setVisible(true);
        this.dispose();
     }//GEN-LAST:event_Btn_finalizar_pedidoActionPerformed
@@ -276,7 +267,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_cadastrar_produtoMousePressed
 
     private void Btn_cadastrar_funcionarioMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_cadastrar_funcionarioMousePressed
-        TelaCadastrarFuncionario tela = new TelaCadastrarFuncionario();
+        TelaCadastrarFuncionario tela = new TelaCadastrarFuncionario(DB);
         tela.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_Btn_cadastrar_funcionarioMousePressed
@@ -292,7 +283,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_finalizar_pedidoMousePressed
 
     private void Btn_cadastrar_produtoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_cadastrar_produtoActionPerformed
-        TelaCadastrarProduto tela = new TelaCadastrarProduto();
+        TelaCadastrarProduto tela = new TelaCadastrarProduto(DB);
         tela.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_Btn_cadastrar_produtoActionPerformed
@@ -304,7 +295,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_loginActionPerformed
 
     private void Btn_cadastrar_clienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_cadastrar_clienteActionPerformed
-        TelaCadastrarCliente tela = new TelaCadastrarCliente();
+        TelaCadastrarCliente tela = new TelaCadastrarCliente(DB);
         tela.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_Btn_cadastrar_clienteActionPerformed
@@ -328,7 +319,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_limpar_listaMouseClicked
 
     private void PedidoRealizadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PedidoRealizadosActionPerformed
-        TelaPedidosRealizados tela = new TelaPedidosRealizados();
+        TelaPedidosRealizados tela = new TelaPedidosRealizados(DB);
         tela.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_PedidoRealizadosActionPerformed
@@ -353,10 +344,9 @@ public class TelaCatalogo extends javax.swing.JFrame {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new TelaCatalogo().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> {Database db = new Database("Database.db"); new TelaCatalogo(db).setVisible(true); });
     }
+        
     public class Pedido {
 
     private String nome;
@@ -388,10 +378,24 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }
     
     private void adicionar_Produtos() {
-        
-        Painel_catalogo.add(new ItemCatalogo("Mouse Gamer", "R$ 150","oi","/imagens/mouse.jpeg","5",Painel_pedido));
-        Painel_catalogo.add(new ItemCatalogo("Teclado Mecânico", "R$ 300","oi","/imagens/mouse.jpeg","5",Painel_pedido));
-        Painel_catalogo.add(new ItemCatalogo("Monitor 24", "R$ 900","oi","/imagens/mouse.jpeg","5",Painel_pedido));
+        Painel_catalogo.removeAll(); 
+        ArrayList<Item> produtosDoBanco = DB.listartodososItens();
+
+    //lista os itens do banco de dados
+        for (Item item : produtosDoBanco) {
+            String precoFormatado = String.format("R$ %.2f", item.Valor);
+            String qtdStr = String.valueOf(item.Quantidade);
+            String caminhoImagem = "/imagens/mouse.jpeg"; // Imagem padrão temporária
+
+            Painel_catalogo.add(new ItemCatalogo(
+                item.Nome,
+                precoFormatado,
+                item.Descricao,
+                caminhoImagem,
+                qtdStr,
+                Painel_pedido
+            ));
+        }
         Painel_catalogo.add(Box.createVerticalStrut(10));
         Painel_catalogo.revalidate();
         Painel_catalogo.repaint();
@@ -421,7 +425,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
 
             setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
             imagemLabel = new JLabel();
-            URL url = getClass().getResource("/imagens/mouse.jpeg");
+            URL url = getClass().getResource(caminhoImagem);
 
             if(url == null){
             System.out.println("Imagem não encontrada");
@@ -432,7 +436,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
                 imagemLabel.setIcon(new ImageIcon(imagem));
             }
             
-            System.out.println(getClass().getResource("/imagens/mouse.jpeg"));
+          
             ImageIcon icon = new ImageIcon(getClass().getResource(caminhoImagem));
             Image imagem = icon.getImage().getScaledInstance(80,80,Image.SCALE_SMOOTH);
             imagemLabel.setIcon(new ImageIcon(imagem)); 
@@ -492,8 +496,6 @@ public class TelaCatalogo extends javax.swing.JFrame {
             itemPedido.add(Box.createHorizontalGlue());
             itemPedido.add(remover);
             painelPedido.add(itemPedido);
-        
-        // Atualiza visualmente o painel de pedidos
             painelPedido.revalidate();
             painelPedido.repaint();
         
@@ -512,7 +514,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
             });
 
             } catch (Exception ex) {
-            // Se der qualquer outro erro oculto, este aviso vai te dizer o que foi
+            
             javax.swing.JOptionPane.showMessageDialog(null, "Erro ao processar: " + ex.getMessage());
             }
             });
