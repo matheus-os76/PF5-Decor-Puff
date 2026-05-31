@@ -1,9 +1,19 @@
-
+import Database.Classes.Cliente;
+import Database.Classes.Funcionario;
+import Database.Classes.Item;
+import Database.Classes.Pedido;
+import Database.Classes.PedidoItem;
+import Database.Classes.Utils.CPF;
+import Database.Classes.Utils.Status_Pedido;
+import Database.Database;
+import java.io.ObjectInputFilter.Status;
 import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.sqlite.core.DB;
 
  
 
@@ -26,37 +36,31 @@ public class TelaFinalizarPedido extends javax.swing.JFrame {
         preco.replace("R$", "").replace(",", ".").trim()
         );
     }
-    public TelaFinalizarPedido(ArrayList<TelaCatalogo.Pedido> pedidos) {
-    
+     private ArrayList<TelaCatalogo.PedidoCarrinho> listaPedidosLocal;
+    private double valorTotalGlobal;
+    CPF Cpf;
+    private static Database DB;
+    public TelaFinalizarPedido(ArrayList<TelaCatalogo.PedidoCarrinho> pedidos,Database db) {
+    DB = db;
+    this.listaPedidosLocal = pedidos;
     initComponents();
     double total = 0;
 
-        for (TelaCatalogo.Pedido p : pedidos) {
+        for (TelaCatalogo.PedidoCarrinho p : pedidos) {
 
     JLabel item = new JLabel(
         p.getNome() + " - " + p.getPreco()
     );
-
     jPanel1.add(item);
-
     total += converterPreco(p.getPreco());
     }
+    this.valorTotalGlobal = total;
     jPanel1.removeAll();
+    jPanel1.setLayout(new BoxLayout(jPanel1, BoxLayout.Y_AXIS));
+    JLabel totalLabel = new JLabel( "Total: R$ " + String.format("%.2f", total));
 
-    jPanel1.setLayout(
-        new BoxLayout(jPanel1, BoxLayout.Y_AXIS)
-    );
-    JLabel totalLabel = new JLabel(
-    "Total: R$ " + String.format("%.2f", total)
-);
-
-    for (TelaCatalogo.Pedido p : pedidos) {
-
-        JLabel item = new JLabel(
-                p.getNome() + " x" + p.getQuantidade() + " - " + p.getPreco()
-        );
-        
-
+    for (TelaCatalogo.PedidoCarrinho p : pedidos) {
+        JLabel item = new JLabel(p.getNome() + " x" + p.getQuantidade() + " - " + p.getPreco());
         jPanel1.add(item);
     }
     jPanel1.add(Box.createVerticalStrut(10));
@@ -80,11 +84,13 @@ public class TelaFinalizarPedido extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         Btn_voltar = new javax.swing.JButton();
+        ConfirmarPedido = new javax.swing.JButton();
+        CPF_label = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setLayout(new java.awt.GridLayout());
+        jPanel1.setLayout(new java.awt.GridLayout(1, 0));
         jScrollPane1.setViewportView(jPanel1);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
@@ -99,7 +105,25 @@ public class TelaFinalizarPedido extends javax.swing.JFrame {
         });
         Btn_voltar.addActionListener(this::Btn_voltarActionPerformed);
 
-        jButton1.setText("Confirmar Pedido");
+        ConfirmarPedido.setText("Confirmar Pedido");
+        ConfirmarPedido.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ConfirmarPedidoMouseClicked(evt);
+            }
+        });
+        ConfirmarPedido.addActionListener(this::ConfirmarPedidoActionPerformed);
+
+        CPF_label.setMaximumSize(new java.awt.Dimension(300, 30));
+        CPF_label.setMinimumSize(new java.awt.Dimension(300, 30));
+        CPF_label.setPreferredSize(new java.awt.Dimension(300, 30));
+        CPF_label.addActionListener(this::CPF_labelActionPerformed);
+
+        jButton1.setText("OK");
+        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButton1MouseClicked(evt);
+            }
+        });
         jButton1.addActionListener(this::jButton1ActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -107,31 +131,39 @@ public class TelaFinalizarPedido extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(55, 55, 55)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(81, 81, 81)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Btn_voltar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
-                .addGap(44, 44, 44))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(60, 60, 60))
+                        .addComponent(CPF_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton1))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(Btn_voltar)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ConfirmarPedido))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(6, 6, 6)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CPF_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Btn_voltar)
-                    .addComponent(jButton1))
-                .addContainerGap(45, Short.MAX_VALUE))
+                    .addComponent(ConfirmarPedido))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
 
         pack();
@@ -142,14 +174,98 @@ public class TelaFinalizarPedido extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_voltarActionPerformed
 
     private void Btn_voltarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_voltarMouseClicked
-        TelaCatalogo tela = new TelaCatalogo();
+        TelaCatalogo tela = new TelaCatalogo(DB);
         tela.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_Btn_voltarMouseClicked
 
+    private void ConfirmarPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ConfirmarPedidoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ConfirmarPedidoActionPerformed
+
+    private void ConfirmarPedidoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ConfirmarPedidoMouseClicked
+        
+        if(Cpf == null){
+            JOptionPane.showMessageDialog(this, "Não tem CPF");
+            return;
+        }
+        if (listaPedidosLocal == null || listaPedidosLocal.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Não há itens no pedido para confirmar!");
+            return;
+        }
+        try {
+            Cliente clienteAtual = DB.getCliente(Cpf);//
+
+            if(clienteAtual == null){
+                JOptionPane.showMessageDialog(this,
+            "Cliente não encontrado!");
+            return;
+            }
+
+            Funcionario funcionarioAtual = DB.getFuncionario(1);
+
+            if(funcionarioAtual == null){
+                JOptionPane.showMessageDialog(this,
+                    "Funcionário não encontrado");
+                return;
+            }
+            Pedido novoPedido = new Pedido(
+            clienteAtual,
+            funcionarioAtual,
+            java.time.LocalDateTime.now(),
+            10.0,
+            10.0,
+            valorTotalGlobal,
+            Status_Pedido.PROCESSANDO
+            );
+            
+            int idPedidoSalvo = DB.addPedido(novoPedido);
+
+            if (idPedidoSalvo != -1) {
+                novoPedido.ID = idPedidoSalvo; 
+                for (TelaCatalogo.PedidoCarrinho itemCarrinho : listaPedidosLocal) {
+                    Item itemBanco = DB.getItem(itemCarrinho.getId());
+                    PedidoItem novoItem = new PedidoItem(
+                        novoPedido,
+                        itemBanco,
+                        itemCarrinho.getQuantidade()
+                    );
+                    double precoUnitario = converterPreco(itemCarrinho.getPreco());
+                    novoItem.Subtotal = precoUnitario * itemCarrinho.getQuantidade();
+                    DB.addPedidoItem(novoItem);
+                }
+
+                JOptionPane.showMessageDialog(this, "Pedido nº " + idPedidoSalvo + " gravado com sucesso no banco de dados!");
+                listaPedidosLocal.clear(); 
+                TelaCatalogo catalogo = new TelaCatalogo(DB);
+                catalogo.setVisible(true);
+                this.dispose();
+
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro ao processar o cabeçalho do pedido no banco.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro ao salvar: " + e.getMessage(), "Erro interno", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_ConfirmarPedidoMouseClicked
+
+    private void CPF_labelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CPF_labelActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CPF_labelActionPerformed
+
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        try {
+            Cpf = new CPF(CPF_label.getText().trim());
+        } 
+        catch(Exception ex) {
+            System.getLogger(TelaFinalizarPedido.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }//GEN-LAST:event_jButton1MouseClicked
 
     /**
      * @param args the command line arguments
@@ -175,12 +291,14 @@ public class TelaFinalizarPedido extends javax.swing.JFrame {
 
         /* Create and display the form */
        java.awt.EventQueue.invokeLater(() -> {
-           new TelaFinalizarPedido(new ArrayList<>()).setVisible(true);
+           new TelaFinalizarPedido(new ArrayList<>(),DB).setVisible(true);
         });
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Btn_voltar;
+    private javax.swing.JTextField CPF_label;
+    private javax.swing.JButton ConfirmarPedido;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
