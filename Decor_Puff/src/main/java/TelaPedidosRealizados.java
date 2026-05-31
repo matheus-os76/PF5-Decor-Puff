@@ -1,3 +1,8 @@
+
+import Database.Database;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -14,8 +19,38 @@ public class TelaPedidosRealizados extends javax.swing.JFrame {
     /**
      * Creates new form TelaPedidosRealizados
      */
-    public TelaPedidosRealizados() {
+    private static Database DB;
+    public TelaPedidosRealizados(Database db) {
+        DB = db;
         initComponents();
+        carregarPedidos();
+    }
+    private void carregarPedidos() {
+        jPanel1.removeAll();
+
+        jPanel1.setLayout(new BoxLayout(jPanel1, BoxLayout.Y_AXIS));
+
+        var pedidos = DB.listarPedidos();
+
+        if (pedidos == null || pedidos.isEmpty()) {
+            jPanel1.add(new JLabel("Nenhum pedido encontrado"));
+            jPanel1.revalidate();
+            jPanel1.repaint();
+            return;
+        }
+
+        for (var p : pedidos) {
+
+            String texto = "Pedido #" + p.ID +
+                    " | Cliente: " + p.cliente.Nome +
+                    " | Total: R$ " + String.format("%.2f", p.Subtotal) +
+                    " | Status: " + p.Status.name();
+
+            jPanel1.add(new JLabel(texto));
+        }
+
+        jPanel1.revalidate();
+        jPanel1.repaint();
     }
 
     /**
@@ -30,25 +65,24 @@ public class TelaPedidosRealizados extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        Btn_voltar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 732, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 477, Short.MAX_VALUE)
-        );
-
+        jPanel1.setLayout(new java.awt.GridBagLayout());
         jScrollPane1.setViewportView(jPanel1);
 
         jLabel1.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
         jLabel1.setText("                                 Pedidos");
         jLabel1.setToolTipText("");
+
+        Btn_voltar.setText("Voltar");
+        Btn_voltar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Btn_voltarMouseClicked(evt);
+            }
+        });
+        Btn_voltar.addActionListener(this::Btn_voltarActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -60,8 +94,10 @@ public class TelaPedidosRealizados extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(39, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 701, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(23, 23, 23))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Btn_voltar)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 696, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -70,11 +106,25 @@ public class TelaPedidosRealizados extends javax.swing.JFrame {
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 479, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Btn_voltar)
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Btn_voltarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_voltarMouseClicked
+        TelaCatalogo tela = new TelaCatalogo(DB);
+        tela.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_Btn_voltarMouseClicked
+
+    private void Btn_voltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_voltarActionPerformed
+        TelaCatalogo tela = new TelaCatalogo(DB);
+        tela.setVisible(true);
+        this.dispose();       
+    }//GEN-LAST:event_Btn_voltarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -98,10 +148,11 @@ public class TelaPedidosRealizados extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new TelaPedidosRealizados().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new TelaPedidosRealizados(DB).setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_voltar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
