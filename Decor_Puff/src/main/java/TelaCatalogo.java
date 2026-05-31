@@ -33,6 +33,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     /**
      * Creates new form TelaInicial
      */
+    private int itemId;
     private static Database DB;
     public TelaCatalogo(Database db) {
         DB = db;
@@ -301,7 +302,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     }//GEN-LAST:event_Btn_cadastrar_clienteActionPerformed
 
     private void Btn_limpar_listaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Btn_limpar_listaMouseClicked
-    for (Pedido pedido : listaPedidos) {
+    for (PedidoCarrinho pedido : listaPedidos) {
         for (java.awt.Component comp : Painel_catalogo.getComponents()) {  
             if (comp instanceof ItemCatalogo) {
                 ItemCatalogo item = (ItemCatalogo) comp;
@@ -347,22 +348,27 @@ public class TelaCatalogo extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(() -> {Database db = new Database("Database.db"); new TelaCatalogo(db).setVisible(true); });
     }
         
-    public class Pedido {
-
+    public static class PedidoCarrinho {
+        
+    private int itemId;
     private String nome;
     private String preco;
     private int quantidade;
 
-    public Pedido(
+    public PedidoCarrinho(
+        int id, 
         String nome,
         String preco,
         int quantidade
     ) {
+        this.itemId = id;
         this.nome = nome;
         this.preco = preco;
         this.quantidade = quantidade;
     }
-
+    public int getId() {
+        return itemId;
+    }
     public String getNome() {
         return nome;
     }
@@ -388,6 +394,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
             String caminhoImagem = "/imagens/mouse.jpeg"; // Imagem padrão temporária
 
             Painel_catalogo.add(new ItemCatalogo(
+                item.ID,
                 item.Nome,
                 precoFormatado,
                 item.Descricao,
@@ -403,7 +410,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
     public void esconderBotaoLogin() {
     Btn_login.setVisible(false);
     }
-    public ArrayList<Pedido> listaPedidos =
+    public ArrayList<PedidoCarrinho> listaPedidos =
         new ArrayList<>();
 
     public class ItemCatalogo extends JPanel {
@@ -415,7 +422,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
         private JLabel quantidadeLabel;
         private JPanel painelPedido;
     
-        public ItemCatalogo(String nome, String preco, String descricao,String caminhoImagem,String quantidade,JPanel painelPedido) {
+        public ItemCatalogo(int id,String nome, String preco, String descricao,String caminhoImagem,String quantidade,JPanel painelPedido) {
             
             setAlignmentX(LEFT_ALIGNMENT);
             setLayout(new BorderLayout());
@@ -481,7 +488,7 @@ public class TelaCatalogo extends javax.swing.JFrame {
             quantidadeLabel.setText("Quantidade: " + quantidadeAtual);
             this.revalidate();
             this.repaint();
-            Pedido pedido = new Pedido(nome, preco, 1);
+            PedidoCarrinho pedido = new PedidoCarrinho(itemId, nome, preco, 1);
             listaPedidos.add(pedido);
         
             JPanel itemPedido = new JPanel();
