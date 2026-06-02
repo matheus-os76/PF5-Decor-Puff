@@ -1,13 +1,12 @@
+package Decor_Puff.Atendente;
 
-import Database.Classes.Cliente;
-import Database.Classes.Utils.CPF;
+
+import Classes.CPF;
+import Classes.Tabelas.Cliente;
+import Classes.Tabelas.Funcionario;
 import Database.Database;
+import Decor_Puff.Atendente.TelaCatalogo;
 import javax.swing.JOptionPane;
-
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 
 /**
  *
@@ -17,14 +16,16 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TelaCadastrarCliente.class.getName());
     private static Database DB;
+    private final Funcionario f;
 
     /**
      * Creates new form TelaCadastrarCliente
      */
-    public TelaCadastrarCliente(Database db) {
+    public TelaCadastrarCliente(Database db, Funcionario funcionario) {
         DB = db;
         initComponents();
         this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
+        this.f = funcionario;
     }
 
     /**
@@ -187,7 +188,13 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
         
         try {
             CPF cpf = new CPF(input_CPF.getText());
-            Cliente c = new Cliente(cpf, nome, email, telefone);
+            Cliente c = new Cliente(0, cpf, nome, email, telefone);
+            
+            DB.addCliente(c);
+            
+            JOptionPane.showMessageDialog(this, "Cliente cadastrado."); 
+            
+            btn_VoltarActionPerformed(evt);
         } catch (Exception ex) {
             System.getLogger(TelaCadastrarCliente.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
@@ -197,9 +204,9 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
     private void btn_VoltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_VoltarActionPerformed
         this.dispose();
         
-        TelaLogin telalogin = new TelaLogin();
+        TelaCatalogo tc = new TelaCatalogo(DB, f);
         
-        telalogin.setVisible(true);
+        tc.setVisible(true);
     }//GEN-LAST:event_btn_VoltarActionPerformed
 
     /**
@@ -226,7 +233,6 @@ public class TelaCadastrarCliente extends javax.swing.JFrame {
         /* Create and display the form */
        java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TelaCadastrarCliente(DB).setVisible(true);
             }
         });
     }

@@ -1,3 +1,7 @@
+package Decor_Puff;
+
+import Classes.Cargo;
+import Decor_Puff.Atendente.TelaCatalogo;
 import Database.*;
 import javax.swing.JOptionPane;
 
@@ -10,9 +14,18 @@ public class TelaLogin extends javax.swing.JFrame {
      * Creates new form TelaLogin
      */
     public TelaLogin() {
-        initComponents();
-        this.setExtendedState(this.MAXIMIZED_BOTH);
-        this.setVisible(true);
+        
+        try {
+//            for (int i = 0; i < 10; i++) DB.addCliente(DatabaseFaker.Cliente());
+//            for (int i = 0; i < 10; i++) DB.addFuncionario(DatabaseFaker.Funcionario());
+//            for (int i = 0; i < 10; i++) DB.addItem(DatabaseFaker.Item());
+            
+        } catch (Exception ex) {
+            System.getLogger(TelaLogin.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+            initComponents();
+            this.setExtendedState(this.MAXIMIZED_BOTH);
+            this.setVisible(true);
     }
 
     /**
@@ -27,7 +40,6 @@ public class TelaLogin extends javax.swing.JFrame {
 
         input_Usuario = new javax.swing.JTextField();
         input_Senha = new javax.swing.JPasswordField();
-        btn_Cadastrar = new javax.swing.JButton();
         lab_Decor_Puf = new javax.swing.JLabel();
         lab_Usuario = new javax.swing.JLabel();
         lab_Senha = new javax.swing.JLabel();
@@ -45,7 +57,7 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.ipadx = 138;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 139, 0, 140);
@@ -58,23 +70,12 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.ipadx = 138;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 139, 0, 140);
         getContentPane().add(input_Senha, gridBagConstraints);
         input_Senha.getAccessibleContext().setAccessibleName("input_Senha");
-
-        btn_Cadastrar.setText("Cadastrar");
-        btn_Cadastrar.addActionListener(this::btn_CadastrarActionPerformed);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 139, 74, 0);
-        getContentPane().add(btn_Cadastrar, gridBagConstraints);
-        btn_Cadastrar.getAccessibleContext().setAccessibleName("btn_Cadastrar");
 
         lab_Decor_Puf.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
         lab_Decor_Puf.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -82,7 +83,7 @@ public class TelaLogin extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.ipadx = 243;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(142, 139, 0, 140);
@@ -114,10 +115,10 @@ public class TelaLogin extends javax.swing.JFrame {
         btn_Entrar.setText("Entrar");
         btn_Entrar.addActionListener(this::btn_EntrarActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 271, 74, 140);
+        gridBagConstraints.insets = new java.awt.Insets(18, 306, 74, 140);
         getContentPane().add(btn_Entrar, gridBagConstraints);
         btn_Entrar.getAccessibleContext().setAccessibleName("btn_Entrar");
 
@@ -126,22 +127,23 @@ public class TelaLogin extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btn_CadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_CadastrarActionPerformed
-
-        this.dispose();
-        
-        TelaCadastrarCliente cadastrar = new TelaCadastrarCliente(DB);
-        
-        cadastrar.setVisible(true);
-    }//GEN-LAST:event_btn_CadastrarActionPerformed
-
     private void btn_EntrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_EntrarActionPerformed
         
         String usuario = input_Usuario.getText();
         String senha = new String(input_Senha.getPassword());
+        var funcionario = DB.getFuncionario(usuario, senha);
         
-        if (DB.getFuncionario(usuario, senha) != null) {
-            JOptionPane.showMessageDialog(this, "Login efetuado com sucesso!\nBem-vindo à Decor Puf.");     
+        if (funcionario != null) {
+            JOptionPane.showMessageDialog(this, "Login efetuado com sucesso!\nBem-vindo à Decor Puf."); 
+            
+            if (funcionario.Cargo == Cargo.ATENDENTE)
+            {                
+                this.dispose();
+                TelaCatalogo telacatalogo = new TelaCatalogo(DB, funcionario);
+                telacatalogo.setVisible(true);
+            }
+            
+            
         } else {
             JOptionPane.showMessageDialog(this, "Usuário ou senha incorretos!", "Erro de Autenticação", JOptionPane.ERROR_MESSAGE);
             
@@ -177,7 +179,6 @@ public class TelaLogin extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btn_Cadastrar;
     private javax.swing.JButton btn_Entrar;
     private javax.swing.JPasswordField input_Senha;
     private javax.swing.JTextField input_Usuario;
