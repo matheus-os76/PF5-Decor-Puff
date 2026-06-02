@@ -1,15 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package Database.Classes;
+package Classes.Tabelas;
 
-import Database.Classes.Utils.Cargo;
+import Classes.Cargo;
 
-/**
- *
- * @author ender
- */
 public class Funcionario {
     
     public int ID;
@@ -28,18 +20,9 @@ public class Funcionario {
         this.Usuario = usuario;
         this.Senha = senha;
     }
-    
-    public Funcionario(String nome, String email, Cargo cargo, String usuario, String senha)
-    {
-        this.ID = 0;
-        this.Nome = nome;
-        this.Email = email;
-        this.Cargo = cargo;
-        this.Usuario = usuario;
-        this.Senha = senha;
-    }
 
     
+    @Override
     public String toString()
     {
         return String.format("Funcionario(%d, %s, %s, %s, %s, %s)", 

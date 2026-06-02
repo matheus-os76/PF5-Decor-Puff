@@ -1,3 +1,5 @@
+package Decor_Puff;
+
 
 import javax.swing.JOptionPane;
 

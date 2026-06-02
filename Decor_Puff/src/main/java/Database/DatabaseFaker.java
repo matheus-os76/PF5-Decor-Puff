@@ -1,26 +1,27 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Database;
 
-import Database.Classes.Utils.CPF;
+import Classes.*;
+import Classes.DAO.ItemDAO;
+import Classes.Tabelas.*;
+import Database.Database.TABELAS;
 import com.github.javafaker.Faker;
-import java.util.Locale;
-import Database.Classes.*;
-import Database.Classes.Utils.*;
-import java.sql.Date;
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.concurrent.TimeUnit;
-/**
- *
- * @author ender
- */
+
+
 public class DatabaseFaker {
     
     private final static Faker faker = new Faker(new Locale("pt", "BR"));
+    private Database DB;
+    
+    public DatabaseFaker(Database DB)
+    {
+        this.DB = DB;
+    }
     
     public static CPF CPF()
     {
@@ -46,7 +47,7 @@ public class DatabaseFaker {
             String email = String.format("%s@gmail.com", pessoa.username());
             String telefone = faker.phoneNumber().phoneNumber();
             
-            return new Cliente(cpf, nome, email, telefone);
+            return new Cliente(0, cpf, nome, email, telefone);
         }
         catch (Exception e)
         {
@@ -66,54 +67,154 @@ public class DatabaseFaker {
         String email = String.format("%s@gmail.com", usuario);
         Cargo cargo = Cargo.values()[faker.random().nextInt(0, 1)];
 
-        return new Funcionario(nome, email, cargo, usuario, senha);
+        return new Funcionario(0, nome, email, cargo, usuario, senha);
     }
     
-    public static Item Item()
+    public static Item Item() throws Exception
     {
         var produto = faker.commerce();
-        int quantidade = faker.random().nextInt(0, 100);
+        String nome = produto.productName();
+        Categoria categoria = Categoria.values()[faker.random().nextInt(0, Categoria.values().length-1)];
+        String descricao = faker.lorem().sentence(5);
+        int quantidade = faker.random().nextInt(1, 100) + 1;
+        Status_Item status = Status_Item.ESTOQUE;
         
-        Status_Item status = (quantidade == 0) ? Status_Item.FALTA : Status_Item.ESTOQUE;
+        int numero_auxiliar = faker.random().nextInt(0, 10);
+        Double valor_venda = 0.0;
+        Double valor_aluguel = 0.0;
         
-        return new Item(
-                produto.productName(), 
-                quantidade, 
-                faker.lorem().sentence(4), 
-                Double.parseDouble(produto.price()), 
-                status
-        );
+        if (numero_auxiliar == 0)
+        {
+            valor_venda = Double.parseDouble(produto.price(0.05, 150.0));
+            valor_aluguel = Double.parseDouble(produto.price(0.05, 150.0));
+        }
+        else if (numero_auxiliar % 2 == 0)
+        {
+            valor_venda = Double.parseDouble(produto.price(0.05, 150.0));
+        }
+        else 
+        {
+            valor_aluguel = Double.parseDouble(produto.price(0.05, 150.0));
+        }
+        
+        return new Item(0, nome, categoria, descricao, quantidade, valor_venda, valor_aluguel, status);
     }
     
-    public static Pedido Pedido(Cliente c, Funcionario f)
+    public static LinkedHashSet<Integer> gerar_NumerosUnicos(int qntd_numeros, int maximo) throws Exception
+    {
+        if (maximo < qntd_numeros)
+        {
+            throw new Exception("Não é possível gerar uma lista sem repetições");
+        }
+        
+        LinkedHashSet<Integer> numeros = new LinkedHashSet<Integer>();
+        
+        while(numeros.size() < qntd_numeros)
+        {
+            numeros.add(faker.random().nextInt(maximo) + 1);
+        }
+        
+        return numeros;
+    }
+    
+    public Pedido Pedido() throws Exception
     {
         double servico = faker.number().randomDouble(2, 1L, 100L);
         double frete = faker.number().randomDouble(2, 1L, 100L);
+        Status_Pedido status = Status_Pedido.values()[faker.random().nextInt(0, Status_Pedido.values().length-1)];
+        LocalDateTime data = faker.date().past(1, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        
+        int qntd_clientes = DB.getTabela_Tamanho(TABELAS.Cliente);
+        int qntd_funcionarios = DB.getTabela_Tamanho(TABELAS.Funcionario);
+        int qntd_itens = DB.getTabela_Tamanho(TABELAS.Item);
+        
+        if (qntd_clientes == 0 && qntd_funcionarios == 0 && qntd_itens == 0)
+        {
+            throw new Exception("Não existe entradas suficientes no Banco de Dados");
+        }
+        
+        int qntd_pedido_itens = faker.random().nextInt(1, qntd_itens);
+        
+        LinkedHashSet<Integer> lista_ids_itens = gerar_NumerosUnicos(qntd_pedido_itens, qntd_itens);
+        
+        ArrayList<ItemDAO> itens = new ArrayList<ItemDAO>(qntd_pedido_itens);
+        
+        for (int i = 0; i < qntd_pedido_itens; i++) {
+            
+            Item item = DB.getItem(lista_ids_itens.removeFirst());
+            
+            if (item.Quantidade == 0)
+            {
+                continue;
+            }
+            
+            ItemDAO item_dao;
+            
+            int qntd_aleatoria = faker.random().nextInt(1, item.Quantidade);
+            
+            
+            if (item.Valor_Aluguel > 0)
+            {
+                if (faker.random().nextBoolean())
+                {
+                    item_dao = new ItemDAO(
+                            item, 
+                            qntd_aleatoria,
+                            data.plusDays(3)
+                    );
+                }
+                else
+                {
+                    item_dao = new ItemDAO(
+                            item, 
+                            qntd_aleatoria
+                    );
+                }
+            }
+            else
+            {                
+                item_dao = new ItemDAO(
+                        item, 
+                        qntd_aleatoria
+                );
+            }
+            
+            itens.add(item_dao);
+        }
         
         return new Pedido(
-                c, 
-                f, 
-                faker.date().past(1, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                0, 
+                DB.getCliente(faker.random().nextInt(1, qntd_clientes)), 
+                DB.getFuncionario(faker.random().nextInt(1, qntd_funcionarios)), 
+                data, 
                 servico, 
                 frete, 
-                servico + frete, 
-                Status_Pedido.values()[faker.random().nextInt(0, (Status_Pedido.values().length)-1)]
+                status,
+                itens
         );
     }
-    
-    public static PedidoItem PedidoItem(Pedido p, Item i)
+   
+    public LogSistema LogSistema() throws Exception
     {
-        return new PedidoItem(p, i, faker.random().nextInt(1, 100));
-    }
-    
-    public static LogSistema LogSistema(Funcionario f, Item i)
-    {
-        return new LogSistema(
-                i, 
-                f, 
-                faker.lorem().sentence(faker.random().nextInt(3, 12)), 
-                faker.date().past(1, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
-        );
+        int qntd_itens = DB.getTabela_Tamanho(TABELAS.Item);
+        int qntd_funcionarios = DB.getTabela_Tamanho(TABELAS.Funcionario);
+        
+        if (qntd_funcionarios == 0)
+        {
+            throw new Exception("Não existe entradas suficientes no Banco de Dados");
+        }
+        
+        String acao = faker.lorem().sentence(faker.random().nextInt(3, 12));
+        LocalDateTime data = faker.date().past(1, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        
+        if (faker.random().nextBoolean() && qntd_itens > 0)
+        {
+            return new LogSistema(0, DB.getItem(faker.random().nextInt(1, qntd_itens)), DB.getFuncionario(faker.random().nextInt(1, qntd_funcionarios)), acao, data);
+        }
+        else
+        {
+            return new LogSistema(0, DB.getFuncionario(faker.random().nextInt(1, qntd_funcionarios)), acao, data);
+        }
     }
         
 }

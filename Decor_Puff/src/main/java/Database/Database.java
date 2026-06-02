@@ -1,21 +1,41 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Database;
 
-import Database.Classes.*;
-import Database.Classes.Utils.*;
+import Classes.*;
+import Classes.DAO.ItemDAO;
+import Classes.DAO.PedidoDAO;
+import Classes.Tabelas.*;
 import java.sql.*;
+import java.util.ArrayList;
 
-/**
- *
- * @author ender
- */
+// <editor-fold desc="Explicação"> 
+/*
+
+    Explicação
+    
+        A classe 'Database' funciona da seguinte forma: quando ela é instância com o "new"
+        ela criará um Banco de Dados SQLite dentro da pasta 'Decor_Puff' com o nome que você
+        passar como parâmetro, caso esse arquivo já exista na pasta ele só ira conectar-se 
+        a esse Banco de Dados existente
+    
+        Com o objeto criado, ele ira permitir você chamar metódos para manusear qualquer tabela
+        presente no banco
+
+        A variável 'Conexao' é a responsável por manter a ligação com o Banco de Dados,
+        através dela podemos executar qualquer comando relacionado ao banco, você pode
+        obter ela através do metódo 'getConn' para casos de EMERGÊNCIA em que 
+        não existe AINDA um metódo para tal ação.
+    
+*/
+// </editor-fold>
+
 public class Database {
     
     private String Caminho;
     private Connection Conexao;
+    
+    public static enum TABELAS {
+        Cliente, Funcionario, Categoria, Item, Pedido, PedidoItem, LogSistema
+    }
     
     public Database(String Caminho)
     {
@@ -24,10 +44,14 @@ public class Database {
         try 
         {
             this.Conexao = DriverManager.getConnection(this.Caminho);
-            Statement Estamento = this.Conexao.createStatement();          
+            Statement Estamento = this.Conexao.createStatement();
+            
+            Estamento.addBatch("PRAGMA foreign_keys = ON;");
+            Estamento.addBatch("PRAGMA ignore_check_constraints = OFF;");
+            
 
             // Criação das Tabelas
-            
+ 
             // <editor-fold defaultstate="collapsed" desc="Tabela Cliente"> 
             Estamento.addBatch("CREATE TABLE IF NOT EXISTS Cliente ("
                                + "ID INTEGER PRIMARY KEY,"
@@ -43,18 +67,39 @@ public class Database {
                                + "nome TEXT NOT NULL,"
                                + "email TEXT NOT NULL,"
                                + "cargo TEXT NOT NULL,"
-                               + "usuario TEXT NOT NULL,"
+                               + "usuario TEXT NOT NULL UNIQUE,"
                                + "senha TEXT NOT NULL);");
+            // </editor-fold>
+            
+            // <editor-fold defaultstate="collapsed" desc="Tabela Categoria">
+            Estamento.addBatch("CREATE TABLE IF NOT EXISTS Categoria ("
+                               + "ID INTEGER PRIMARY KEY,"
+                               + "nome TEXT UNIQUE NOT NULL);");
+            
+            String insert_categorias = "INSERT OR IGNORE INTO Categoria (nome) VALUES ";
+            int qntd_categorias = Categoria.values().length;
+            
+            for (int i = 0; i < qntd_categorias-1; i++) {
+                
+                insert_categorias += String.format("(\"%s\"), ", Categoria.values()[i]);
+            }
+            
+            insert_categorias += String.format("(\"%s\");", Categoria.values()[qntd_categorias-1]);
+            
+            Estamento.addBatch(insert_categorias);
             // </editor-fold>
             
             // <editor-fold defaultstate="collapsed" desc="Tabela Item">
             Estamento.addBatch("CREATE TABLE IF NOT EXISTS Item ("
                                + "ID INTEGER PRIMARY KEY,"
+                               + "ID_categoria INTEGER NOT NULL,"
                                + "nome TEXT NOT NULL,"
+                               + "descricao TEXT,"
                                + "quantidade INT NOT NULL,"
-                               + "descricao TEXT NOT NULL,"
-                               + "valor REAL NOT NULL,"
-                               + "status TEXT NOT NULL);");
+                               + "valor_venda REAL DEFAULT 0.0,"
+                               + "valor_aluguel REAL DEFAULT 0.0,"
+                               + "status TEXT NOT NULL,"
+                               + "FOREIGN KEY(ID_categoria) REFERENCES Categoria(ID));");
             // </editor-fold>
             
             // <editor-fold defaultstate="collapsed" desc="Tabela Pedido">
@@ -62,10 +107,11 @@ public class Database {
                                + "ID INTEGER PRIMARY KEY,"
                                + "ID_cliente INT NOT NULL,"
                                + "ID_funcionario INT NOT NULL,"
-                               + "Data DATETIME NOT NULL,"
-                               + "valor_servico REAL NOT NULL,"
-                               + "valor_frete REAL NOT NULL,"
-                               + "subtotal REAL NOT NULL,"
+                               + "data DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                               + "valor_frete REAL NOT NULL DEFAULT 0.0,"
+                               + "valor_servico REAL NOT NULL DEFAULT 0.0,"
+                               + "subtotal REAL NOT NULL DEFAULT 0.0,"
+                               + "total REAL GENERATED ALWAYS AS (valor_frete+valor_servico+subtotal) STORED,"
                                + "status TEXT NOT NULL,"
                                + "FOREIGN KEY(ID_funcionario) REFERENCES Funcionario(ID),"
                                + "FOREIGN KEY(ID_cliente) REFERENCES Cliente(ID));");
@@ -77,7 +123,8 @@ public class Database {
                                + "ID_pedido INT NOT NULL,"
                                + "ID_item INT NOT NULL,"
                                + "quantidade INT NOT NULL,"
-                               + "subtotal REAL NOT NULL,"
+                               + "subtotal REAL DEFAULT 0.0,"
+                               + "data_devolucao DATETIME,"
                                + "FOREIGN KEY(ID_pedido) REFERENCES Pedido(ID),"
                                + "FOREIGN KEY(ID_item) REFERENCES Item(ID));");
             // </editor-fold>
@@ -85,36 +132,193 @@ public class Database {
             // <editor-fold defaultstate="collapsed" desc="Tabela LogSistema">
             Estamento.addBatch("CREATE TABLE IF NOT EXISTS LogSistema ("
                                + "ID INTEGER PRIMARY KEY,"
-                               + "ID_item INT NOT NULL,"
                                + "ID_funcionario INT NOT NULL,"
+                               + "ID_item INT,"
                                + "acao TEXT NOT NULL,"
-                               + "Data DATETIME,"
-                               + "FOREIGN KEY(ID_funcionario) REFERENCES Funcionario(ID));");
+                               + "data DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                               + "FOREIGN KEY(ID_funcionario) REFERENCES Funcionario(ID),"
+                               + "FOREIGN KEY(ID_item) REFERENCES Item(ID));");
             // </editor-fold>
             
+            // <editor-fold defaultstate="collapsed" desc="Trigger Pedido">
+            Estamento.addBatch("CREATE TRIGGER IF NOT EXISTS Pedido_Subtotal_DELETE "
+                               + "AFTER DELETE ON PedidoItem "
+                               + "BEGIN "
+                                    + "UPDATE Pedido "
+                                        + "SET subtotal = subtotal - OLD.subtotal "
+                                    + "WHERE Pedido.ID = OLD.ID_pedido; "
+                    
+                                    + "UPDATE Item "
+                                        + "SET quantidade = quantidade + OLD.quantidade "
+                                    + "WHERE Item.ID = OLD.ID_item; "
+                               + "END;");
+            
+            Estamento.addBatch("CREATE TRIGGER IF NOT EXISTS Pedido_Subtotal_INSERT "
+                               + "AFTER INSERT ON PedidoItem "
+                               + "BEGIN "
+                                    + "UPDATE PedidoItem "
+                                        + "SET subtotal = NEW.quantidade * IIF(NEW.data_devolucao IS NULL, Item.valor_venda, Item.valor_aluguel) "
+                                    + "FROM Item "
+                                    + "WHERE PedidoItem.ID = NEW.ID AND Item.ID = NEW.ID_item; "
+                    
+                                    + "UPDATE Pedido "
+                                        + "SET subtotal = Pedido.subtotal + PedidoItem.subtotal "
+                                    + "FROM PedidoItem "
+                                    + "WHERE PedidoItem.ID = NEW.ID AND Pedido.ID = NEW.ID_pedido; "
+                    
+                                    + "UPDATE Item "
+                                        + "SET quantidade = quantidade - NEW.quantidade "
+                                    + "WHERE Item.ID = NEW.ID_item; "
+                               + "END;");
+            
+            Estamento.addBatch("CREATE TRIGGER IF NOT EXISTS Pedido_Subtotal_UPDATE "
+                               + "AFTER UPDATE OF ID_item, quantidade ON PedidoItem "
+                               + "BEGIN "
+                                    + "UPDATE PedidoItem "
+                                        + "SET subtotal = NEW.quantidade * IIF(NEW.data_devolucao IS NULL, Item.valor_venda, Item.valor_aluguel) "
+                                    + "FROM Item "
+                                    + "WHERE PedidoItem.ID = NEW.ID AND Item.ID = NEW.ID_item; "
+                    
+                                    + "UPDATE Pedido "
+                                        + "SET subtotal = (SELECT SUM(subtotal) FROM PedidoItem WHERE ID_pedido = NEW.ID_pedido) "
+                                    + "FROM PedidoItem "
+                                    + "WHERE Pedido.ID = NEW.ID_pedido; "
+                    
+                                    + "UPDATE Item "
+                                        + "SET quantidade = quantidade + (OLD.quantidade - NEW.quantidade) "
+                                    + "WHERE Item.ID = NEW.ID_item; "
+                               + "END;");
+            
+            //</editor-fold>
+            
+            // <editor-fold defaultstate="collapsed" desc="Trigger Item">
+            
+            Estamento.addBatch(""
+                    + "CREATE TRIGGER IF NOT EXISTS Item_Status_ESTOQUE "
+                    + "AFTER UPDATE OF quantidade ON Item "
+                        + "WHEN OLD.quantidade = 0 AND NEW.quantidade > 0 "
+                    + "BEGIN "
+                        + "UPDATE Item SET status = 'ESTOQUE' WHERE Item.ID = NEW.ID; "
+                    + "END;");
+            
+            Estamento.addBatch(""
+                    + "CREATE TRIGGER IF NOT EXISTS Item_Status_FALTA "
+                    + "AFTER UPDATE OF quantidade ON Item "
+                        + "WHEN NEW.quantidade = 0 "
+                    + "BEGIN "
+                        + "UPDATE Item SET status = 'FALTA' WHERE Item.ID = NEW.ID; "
+                    + "END;");
+            
+            Estamento.addBatch(""
+                    + "CREATE TRIGGER IF NOT EXISTS Item_Valor_UPDATE "
+                    + "AFTER UPDATE OF valor_venda, valor_aluguel ON Item "
+                    + "BEGIN "
+                        + "UPDATE PedidoItem "
+                            + "SET subtotal = PedidoItem.quantidade * IIF(PedidoItem.data_devolucao IS NULL, NEW.valor_venda, NEW.valor_aluguel) "
+                        + "FROM Item "
+                        + "WHERE PedidoItem.ID_item = NEW.ID; " 
+                    
+                        + "UPDATE Pedido " 
+                            + "SET subtotal = (SELECT SUM(subtotal) FROM PedidoItem WHERE ID_pedido = Pedido.ID); "  
+                    + "END;");
+            
+            //</editor-fold>
+
             Estamento.executeBatch();
         }
         catch (SQLException e)
         {
             System.err.print(e.getMessage());
         }
-                
+        
     }
     
-    // <editor-fold defaultstate="collapsed" desc="Metodos Cliente">
+    public Connection getConn()
+    {
+        return Conexao;
+    }
+    
+    public int getTabela_Tamanho(TABELAS nome_tabela)
+    {
+        
+        try {
+            ResultSet resultado = Conexao.createStatement().executeQuery(String.format("SELECT COUNT(ID) FROM %s", nome_tabela.name()));
+            
+            if (resultado.next())
+            {
+                return resultado.getInt("COUNT(ID)");
+            }
+            
+        } catch (SQLException ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        
+        return 0;
+    }
+    
+    // <editor-fold defaultstate="collapsed" desc="Metodos Tabelas">
+    
+    public void addLog(LogSistema log)
+    {
+        try 
+        {
+            
+            PreparedStatement stmt;
+            if (log.Item == null)
+            {
+                stmt = Conexao.prepareStatement("INSERT INTO "
+                        + "LogSistema (ID_funcionario, acao) "
+                        + "VALUES (?, ?) "
+                        + "RETURNING ID");
+                
+                stmt.setInt(1, log.Funcionario.ID);
+                stmt.setString(2, log.Acao);
+            }
+            else
+            {
+                stmt = Conexao.prepareStatement("INSERT INTO "
+                        + "LogSistema (ID_funcionario, ID_item, acao) "
+                        + "VALUES (?, ?, ?) "
+                        + "RETURNING ID");    
+                
+                stmt.setInt(1, log.Funcionario.ID);
+                stmt.setInt(2, log.Item.ID);
+                stmt.setString(3, log.Acao);
+            }
+            
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {            
+                log.ID = resultado.getInt("ID");
+            }
+            stmt.close();
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    // <editor-fold defaultstate="collapsed" desc="Cliente">
     public void addCliente(Cliente c)
     {
         try 
         {
             
-            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Cliente (CPF, nome, email, telefone) VALUES (?, ?, ?, ?)");
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Cliente (CPF, nome, email, telefone) VALUES (?, ?, ?, ?) RETURNING ID");
             
             stmt.setString(1, c.CPF.toString());
             stmt.setString(2, c.Nome);
             stmt.setString(3, c.Email);
             stmt.setString(4, c.Telefone);
             
-            stmt.execute();
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {            
+                c.ID = resultado.getInt("ID");
+            }
             stmt.close();
         } 
         catch (SQLException e) 
@@ -134,20 +338,15 @@ public class Database {
             
             if (resultado.next())
             {      
-                try
-                {
-                    return new Cliente(
-                            id, 
-                            new CPF(resultado.getString("CPF")), 
-                            resultado.getString("nome"), 
-                            resultado.getString("email"), 
-                            resultado.getString("telefone")
-                    );
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+
+                return new Cliente(
+                        id, 
+                        new CPF(resultado.getString("CPF")), 
+                        resultado.getString("nome"), 
+                        resultado.getString("email"), 
+                        resultado.getString("telefone")
+                );
+
             }
             resultado.close();
             stmt.close();
@@ -157,6 +356,8 @@ public class Database {
         catch (SQLException e) 
         {
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         
         return null;
@@ -173,20 +374,14 @@ public class Database {
             
             if (resultado.next())
             {      
-                try
-                {
-                    return new Cliente(
-                            resultado.getInt("ID"), 
-                            cpf, 
-                            resultado.getString("nome"), 
-                            resultado.getString("email"), 
-                            resultado.getString("telefone")
-                    );
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+                return new Cliente(
+                        resultado.getInt("ID"), 
+                        cpf, 
+                        resultado.getString("nome"), 
+                        resultado.getString("email"), 
+                        resultado.getString("telefone")
+                );
+       
             }
             resultado.close();
             stmt.close();
@@ -247,13 +442,13 @@ public class Database {
         return false;
     }
 
-    public boolean delCliente(Cliente c)
+    public boolean delCliente(CPF cpf)
     {
         try 
         {
             PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM Cliente CPF = ?");
             
-            stmt.setString(1, c.CPF.toString());
+            stmt.setString(1, cpf.toString());
             stmt.executeUpdate();
             
             stmt.close();
@@ -266,15 +461,17 @@ public class Database {
         
         return false;
     }
-    // </editor-fold> 
+    // </editor-fold>
     
-    // <editor-fold defaultstate="collapsed" desc="Metodos Funcionario">
+    // <editor-fold defaultstate="collapsed" desc="Funcionario">
     public void addFuncionario(Funcionario f)
     {
         try 
         {
             
-            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Funcionario (nome, email, cargo, usuario, senha) VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Funcionario "
+                                                            + "(nome, email, cargo, usuario, senha) VALUES (?, ?, ?, ?, ?) "
+                                                            + "RETURNING ID;");
             
             stmt.setString(1, f.Nome);
             stmt.setString(2, f.Email);
@@ -282,7 +479,13 @@ public class Database {
             stmt.setString(4, f.Usuario);
             stmt.setString(5, f.Senha);
             
-            stmt.execute();
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {
+                f.ID = resultado.getInt("ID");
+            }
+            
             stmt.close();
         } 
         catch (SQLException e) 
@@ -301,22 +504,16 @@ public class Database {
             ResultSet resultado = stmt.executeQuery();
             
             if (resultado.next())
-            {      
-                try
-                {
-                    return new Funcionario(
-                            id,
-                            resultado.getString("nome"),
-                            resultado.getString("email"),
-                            Cargo.valueOf(resultado.getString("cargo")),
-                            resultado.getString("usuario"),
-                            resultado.getString("senha")
-                    );
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+            {
+                return new Funcionario(
+                        id,
+                        resultado.getString("nome"),
+                        resultado.getString("email"),
+                        Cargo.valueOf(resultado.getString("cargo")),
+                        resultado.getString("usuario"),
+                        resultado.getString("senha")
+                );
+
             }
             resultado.close();
             stmt.close();
@@ -324,6 +521,45 @@ public class Database {
             return null;
         } 
         catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public Funcionario getFuncionario(String usuario)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM Funcionario WHERE usuario = ?");
+            
+            stmt.setString(1, usuario);
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {      
+   
+                return new Funcionario(
+                        resultado.getInt("ID"),
+                        resultado.getString("nome"),
+                        resultado.getString("email"),
+                        Cargo.valueOf(resultado.getString("cargo")),
+                        usuario,
+                        resultado.getString("senha")
+                );
+
+            }
+            resultado.close();
+            stmt.close();
+            
+            return null;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -379,22 +615,34 @@ public class Database {
     }
     // </editor-fold> 
     
-    // <editor-fold defaultstate="collapsed" desc="Metodos Item">
+    // <editor-fold defaultstate="collapsed" desc="Item">    
     public void addItem(Item i)
     {
         try 
         {
-            
-            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Item (nome, quantidade, descricao, valor, status) VALUES (?, ?, ?, ?, ?)");
-            
+
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Item "
+                    + "(nome, ID_categoria, descricao, quantidade, valor_venda, valor_aluguel, status) VALUES "
+                    + "(?, (SELECT ID FROM Categoria WHERE nome = ?), ?, ?, ?, ?, ?)"
+                    + "RETURNING ID");
+
             stmt.setString(1, i.Nome);
-            stmt.setInt(2, i.Quantidade);
+            stmt.setString(2, i.Categoria.name());
             stmt.setString(3, i.Descricao);
-            stmt.setDouble(4, i.Valor);
-            stmt.setString(5, i.Status.name());
+            stmt.setInt(4, i.Quantidade);
+            stmt.setDouble(5, i.Valor_Venda);
+            stmt.setDouble(6, i.Valor_Aluguel);
+            stmt.setString(7, i.Status.name());
+
+            ResultSet resultado = stmt.executeQuery();
             
-            stmt.execute();
+            if (resultado.next())
+            {
+                i.ID = resultado.getInt("ID");
+            }
+            
             stmt.close();
+            
         } 
         catch (SQLException e) 
         {
@@ -406,30 +654,29 @@ public class Database {
     {
         try 
         {
-            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM Item WHERE ID = ?");
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT "
+                    + "Item.ID, Categoria.nome AS 'Categoria', Item.nome, Item.descricao, Item.quantidade, Item.valor_venda, Item.valor_aluguel, Item.status "
+                    + "FROM Item INNER JOIN Categoria ON Categoria.ID = Item.ID_categoria "
+                    + "WHERE Item.ID = ?;");
             
             stmt.setInt(1, id);
+            
             ResultSet resultado = stmt.executeQuery();
             
             if (resultado.next())
-            {      
-                try
-                {
-                    return new Item(
-                            id,
-                            resultado.getString("nome"),
-                            resultado.getInt("quantidade"),
-                            resultado.getString("descricao"),
-                            resultado.getDouble("valor"),
-                            Status_Item.valueOf(resultado.getString("status"))
-                    );
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+            {
+                return new Item(
+                        resultado.getInt("ID"), 
+                        resultado.getString("nome"), 
+                        Categoria.valueOf(resultado.getString("Categoria")), 
+                        resultado.getString("descricao"), 
+                        resultado.getInt("quantidade"), 
+                        resultado.getDouble("valor_venda"), 
+                        resultado.getDouble("valor_aluguel"), 
+                        Status_Item.valueOf(resultado.getString("status"))
+                );
             }
-            resultado.close();
+            
             stmt.close();
             
             return null;
@@ -437,6 +684,8 @@ public class Database {
         catch (SQLException e) 
         {
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         
         return null;
@@ -446,15 +695,18 @@ public class Database {
     {
         try 
         {
-            PreparedStatement stmt = Conexao.prepareStatement("UPDATE Item SET nome = ?, quantidade = ?, descricao = ?, valor = ?, status = ? WHERE ID = ?");
+            PreparedStatement stmt = Conexao.prepareStatement("UPDATE Item SET "
+                    + "nome = ?, ID_categoria = (SELECT ID From Categoria WHERE nome = ?), quantidade = ?, descricao = ?, valor_venda = ?, valor_aluguel = ?, status = ? "
+                    + "WHERE ID = ?");
             
             stmt.setString(1, i.Nome);
-            stmt.setInt(2, i.Quantidade);
-            stmt.setString(3, i.Descricao);
-            stmt.setDouble(4, i.Valor);
-            stmt.setString(5, i.Status.name());
-            
-            stmt.setInt(6, i.ID);
+            stmt.setString(2, i.Categoria.name());
+            stmt.setInt(3, i.Quantidade);
+            stmt.setString(4, i.Descricao);
+            stmt.setDouble(5, i.Valor_Venda);
+            stmt.setDouble(6, i.Valor_Aluguel);
+            stmt.setString(7, i.Status.name());
+            stmt.setInt(8, i.ID);
             
             stmt.executeUpdate();
             stmt.close();
@@ -490,96 +742,302 @@ public class Database {
     }
     // </editor-fold> 
     
-    // <editor-fold defaultstate="collapsed" desc="Metodos Pedido">
+    // <editor-fold defaultstate="collapsed" desc="Pedido">
     public void addPedido(Pedido p)
     {
         try 
         {
 
-            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO Pedido (ID_cliente, ID_funcionario, Data, valor_servico, valor_frete, subtotal, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-
-            stmt.setInt(1, p.cliente.ID);
-            stmt.setInt(2, p.funcionario.ID);
-            stmt.setDate(3, p.getDateSQL());
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO "
+                    + "Pedido (ID_cliente, ID_funcionario, data, valor_servico, valor_frete, status) "
+                    + "VALUES (?, ?, ?, ?, ?, ?) "
+                    + "RETURNING ID;");
+                
+            stmt.setInt(1, p.Cliente.ID);
+            stmt.setInt(2, p.Funcionario.ID);
+            stmt.setTimestamp(3, p.getDateSQL());
             stmt.setDouble(4, p.Valor_Servico);
             stmt.setDouble(5, p.Valor_Frete);
-            stmt.setDouble(6, p.Subtotal);
-            stmt.setString(7, p.Status.name());
+            stmt.setString(6, p.Status.name());
 
-            stmt.execute();
-            stmt.close();
+            ResultSet resultado = stmt.executeQuery();
+
+            if (resultado.next())
+            {
+                p.ID = resultado.getInt("ID");
+                stmt.close();
+                
+                if (!p.Itens.isEmpty())
+                {
+                    
+                    Conexao.setAutoCommit(false);
+                    
+                    PreparedStatement stmt_Itens = Conexao.prepareStatement("INSERT INTO "
+                            + "PedidoItem (ID_pedido, ID_item, quantidade, data_devolucao) "
+                            + "VALUES (?, ?, ?, ?)");
+                                       
+                    
+                    for (int j = 0; j < p.Itens.size(); j++)
+                    {
+                        stmt_Itens.setInt(1, p.ID);
+                        stmt_Itens.setInt(2, p.Itens.get(j).Item.ID);
+                        stmt_Itens.setInt(3, p.Itens.get(j).Quantidade);
+                        stmt_Itens.setTimestamp(4, p.Itens.get(j).getDateSQL());
+                        stmt_Itens.addBatch();
+                    }
+                    
+                    stmt_Itens.executeBatch();
+                    stmt_Itens.close();
+                    
+                    Conexao.commit();
+                    Conexao.setAutoCommit(true);
+                }
+            }
+            else
+            {
+                stmt.close();
+            }
+            
         } 
         catch (SQLException e) 
         {
             e.printStackTrace();
         }
     }
-
-    public Pedido getPedido(int id)
+    
+    public void addPedidoItem(int id_pedido, ItemDAO i)
     {
         try 
         {
-            PreparedStatement stmt_pedido = Conexao.prepareStatement("SELECT * FROM Pedido WHERE ID = ?");
 
-            stmt_pedido.setInt(1, id);
-            ResultSet resultado_pedido = stmt_pedido.executeQuery();
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO "
+                    + "PedidoItem (ID_pedido, ID_item, quantidade, data_devolucao) "
+                    + "VALUES (?, ?, ?, ?);");
+                
+            stmt.setInt(1, id_pedido);
+            stmt.setInt(2, i.Item.ID);
+            stmt.setInt(3, i.Quantidade);
+            stmt.setTimestamp(4, i.getDateSQL());
 
-            if (resultado_pedido.next())
-            {      
-                try
-                {
-                    PreparedStatement stmt_cliente = Conexao.prepareStatement("SELECT * FROM Cliente WHERE ID = ?");
-                    stmt_cliente.setInt(1, resultado_pedido.getInt("ID_cliente"));
+            ResultSet resultado = stmt.executeQuery();
 
-                    ResultSet resultado_cliente = stmt_cliente.executeQuery();
-
-                    PreparedStatement stmt_funcionario = Conexao.prepareStatement("SELECT * FROM Funcionario WHERE ID = ?");
-                    stmt_funcionario.setInt(1, resultado_pedido.getInt("ID_funcionario"));
-
-                    ResultSet resultado_funcionario = stmt_funcionario.executeQuery();
-
-                    if (resultado_cliente.next() & resultado_funcionario.next())
-                    {
-                        return new Pedido(
-                                id,
-
-                                new Cliente(
-                                        resultado_cliente.getInt("ID"), 
-                                        new CPF(resultado_cliente.getString("CPF")), 
-                                        resultado_cliente.getString("nome"), 
-                                        resultado_cliente.getString("email"), 
-                                        resultado_cliente.getString("telefone")),
-
-                                new Funcionario(
-                                        resultado_funcionario.getInt("ID"),
-                                        resultado_funcionario.getString("nome"),
-                                        resultado_funcionario.getString("email"),
-                                        Cargo.valueOf(resultado_funcionario.getString("cargo")),
-                                        resultado_funcionario.getString("usuario"),
-                                        resultado_funcionario.getString("senha")),
-
-                                resultado_pedido.getTimestamp("Data").toLocalDateTime(),
-                                resultado_pedido.getDouble("valor_servico"),
-                                resultado_pedido.getDouble("valor_frete"),
-                                resultado_pedido.getDouble("subtotal"),
-                                Status_Pedido.valueOf(resultado_pedido.getString("status"))
-                        );             
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+            if (!resultado.next())
+            {
+                throw new Exception("Erro ao Inserir Item");
             }
-            resultado_pedido.close();
-            stmt_pedido.close();
-
-            return null;
+            
         } 
         catch (SQLException e) 
         {
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+    
+    public void addPedidoItem(PedidoItem pi)
+    {
+        try 
+        {
+
+            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO "
+                    + "PedidoItem (ID_pedido, ID_item, quantidade, data_devolucao) "
+                    + "VALUES (?, ?, ?, ?) "
+                    + "RETURNING ID;");
+                
+            stmt.setInt(1, pi.pedido.ID);
+            stmt.setInt(2, pi.item.ID);
+            stmt.setInt(3, pi.Quantidade);
+            stmt.setTimestamp(4, pi.getDateSQL());
+
+            ResultSet resultado = stmt.executeQuery();
+
+            if (resultado.next())
+            {
+                pi.ID = resultado.getInt("ID");
+            }
+            
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+    
+    public Pedido getPedido(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT "
+                    + "ID, ID_cliente, ID_funcionario, data, valor_servico, valor_frete, subtotal, total, status "
+                    + "FROM Pedido "
+                    + "WHERE Pedido.ID = ?; ");
+            
+            stmt.setInt(1, id);
+
+            ResultSet resultado = stmt.executeQuery();
+
+            if (resultado.next())
+            {
+                
+                Cliente c = this.getCliente(resultado.getInt("ID_cliente"));
+                Funcionario f = this.getFuncionario(resultado.getInt("ID_funcionario"));
+                
+                
+                PreparedStatement stmt_itens = Conexao.prepareStatement(
+                        "SELECT ID_item, quantidade, subtotal, data_devolucao "
+                        + "FROM PedidoItem WHERE ID_pedido = ?;");
+
+                stmt_itens.setInt(1, id);
+
+                ResultSet resultado_itens = stmt_itens.executeQuery();
+                
+                ArrayList<ItemDAO> lista_itens = new ArrayList<ItemDAO>();
+
+                while(resultado_itens.next())
+                {    
+                    
+                    ItemDAO i = new ItemDAO(
+                            this.getItem(resultado_itens.getInt("ID_item")),
+                            resultado_itens.getInt("quantidade"),
+                            resultado_itens.getTimestamp("data_devolucao")
+                    );
+
+                    lista_itens.add(i);
+                }
+
+                return new Pedido(
+                                id,
+                                c,
+                                f,
+                                resultado.getTimestamp("data"),
+                                resultado.getDouble("valor_servico"),
+                                resultado.getDouble("valor_frete"),
+                                Status_Pedido.valueOf(resultado.getString("status")),
+                                lista_itens
+
+                );
+
+            }
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+
+        return null;
+    }
+    
+    public ArrayList<ItemDAO> getPedidoItens(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT ID_item, quantidade, data_devolucao FROM PedidoItem WHERE ID_pedido = ?;");
+            
+            stmt.setInt(1, id);
+
+            ResultSet resultado = stmt.executeQuery();
+            ArrayList<ItemDAO> PedidoItens = new ArrayList<ItemDAO>();
+            
+            while (resultado.next())
+            {
+                PedidoItens.add(new ItemDAO(
+                            this.getItem(resultado.getInt("ID_item")),
+                            resultado.getInt("quantidade"),
+                            resultado.getTimestamp("data_devolucao")
+                        )
+                );
+            }
+
+            return PedidoItens;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+
+        return null;
+    }
+    
+    public PedidoDAO getPedidoDAO(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT "
+                    + "ID, ID_cliente, ID_funcionario, data, valor_servico, valor_frete, subtotal, total, status "
+                    + "FROM Pedido "
+                    + "WHERE Pedido.ID = ?; ");
+            
+            stmt.setInt(1, id);
+
+            ResultSet resultado = stmt.executeQuery();
+
+            if (resultado.next())
+            {
+                
+                Cliente c = this.getCliente(resultado.getInt("ID_cliente"));
+                Funcionario f = this.getFuncionario(resultado.getInt("ID_funcionario"));
+
+                return new PedidoDAO(
+                                id,
+                                c,
+                                f,
+                                resultado.getTimestamp("data"),
+                                resultado.getDouble("valor_servico"),
+                                resultado.getDouble("valor_frete"),
+                                resultado.getDouble("subtotal"),
+                                resultado.getDouble("total"),
+                                Status_Pedido.valueOf(resultado.getString("status"))
+                );
+
+            }
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+
+        return null;
+    }
+    
+    public PedidoItem getPedidoItem(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT "
+                    + "SELECT ID, ID_pedido, ID_item, quantidade, subtotal, data_devolucao "
+                    + "FROM PedidoItem "
+                    + "WHERE ID = ?;");
+            
+            stmt.setInt(1, id);
+
+            ResultSet resultado = stmt.executeQuery();
+            
+            if (resultado.next())
+            {
+                return new PedidoItem(
+                        resultado.getInt("ID"),
+                        this.getPedidoDAO(resultado.getInt("ID_pedido")),
+                        this.getItem(resultado.getInt("ID_item")),
+                        resultado.getInt("quantidade"),
+                        resultado.getTimestamp("data_devolucao")
+                );
+            }
+
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
 
         return null;
@@ -589,22 +1047,76 @@ public class Database {
     {
         try 
         {
-            PreparedStatement stmt = Conexao.prepareStatement("UPDATE Pedido SET Data = ?, valor_servico = ?, valor_frete = ?, subtotal = ?, status = ?, ID_cliente = ?, ID_funcionario = ? WHERE ID = ?");
+            Conexao.setAutoCommit(false);
+            PreparedStatement stmt = Conexao.prepareStatement("UPDATE Pedido "
+                    + "SET ID_cliente = ?, ID_funcionario = ?, data = ?, valor_servico = ?, valor_frete = ?, status = ? "
+                    + "WHERE ID = ?; ");
 
-            stmt.setDate(1, p.getDateSQL());
-            stmt.setDouble(2, p.Valor_Servico);
-            stmt.setDouble(3, p.Valor_Frete);
-            stmt.setDouble(4, p.Subtotal);
-            stmt.setString(4, p.Status.toString());
-            stmt.setInt(5, p.cliente.ID);
-            stmt.setInt(6, p.funcionario.ID);
-
+            stmt.setInt(1, p.Cliente.ID);
+            stmt.setInt(2, p.Funcionario.ID);
+            stmt.setTimestamp(3, p.getDateSQL());
+            stmt.setDouble(4, p.Valor_Servico);
+            stmt.setDouble(5, p.Valor_Frete);
+            stmt.setString(6, p.Status.name());
             stmt.setInt(7, p.ID);
 
             stmt.executeUpdate();
             stmt.close();
+            
+            PreparedStatement stmt_delete = Conexao.prepareStatement("DELETE FROM PedidoItem WHERE ID_pedido = ?");
+            stmt_delete.setInt(1, p.ID);
+            stmt_delete.execute();
+            stmt_delete.close();
+            
+            if (!p.Itens.isEmpty())
+            {
+                PreparedStatement stmt_Itens = Conexao.prepareStatement("INSERT INTO "
+                        + "PedidoItem (ID_pedido, ID_item, quantidade, data_devolucao) "
+                        + "VALUES (?, ?, ?, ?)");
 
+
+                for (int j = 0; j < p.Itens.size(); j++)
+                {
+                    stmt_Itens.setInt(1, p.ID);
+                    stmt_Itens.setInt(2, p.Itens.get(j).Item.ID);
+                    stmt_Itens.setInt(3, p.Itens.get(j).Quantidade);
+                    stmt_Itens.setTimestamp(4, p.Itens.get(j).getDateSQL());
+                    stmt_Itens.addBatch();
+                }
+
+                stmt_Itens.executeBatch();
+                stmt_Itens.close();
+            }
+
+            Conexao.commit();
+            Conexao.setAutoCommit(true);
             return p;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+    
+    public Pedido updatePedidoItem(PedidoItem p)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("UPDATE PedidoItem "
+                    + "SET ID_pedido = ?, ID_item = ?, quantidade = ?, subtotal = ?, data_devolucao = ? "
+                    + "WHERE ID = ?");
+            
+            stmt.setInt(1, p.pedido.ID);
+            stmt.setInt(2, p.item.ID);
+            stmt.setInt(3, p.Quantidade);
+            stmt.setDouble(4, p.Subtotal);
+            stmt.setTimestamp(5, p.getDateSQL());
+            stmt.setInt(6, p.ID);
+            
+            stmt.executeUpdate();
+            stmt.close();
         } 
         catch (SQLException e) 
         {
@@ -618,7 +1130,49 @@ public class Database {
     {
         try 
         {
-            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM Pedido WHERE ID = ?");
+            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM PedidoItem WHERE ID_pedido = ?; "
+                                                            + "DELETE FROM Pedido WHERE ID = ?");
+
+            stmt.setInt(1, id);
+            stmt.setInt(2, id);
+            stmt.executeUpdate();
+
+            stmt.close();
+            return true;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+    
+    public boolean delPedidoItem(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM PedidoItem WHERE ID = ?;");
+
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+
+            stmt.close();
+            return true;
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+    
+    public boolean cleanPedido(int id)
+    {
+        try 
+        {
+            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM PedidoItem WHERE ID_pedido = ?");
 
             stmt.setInt(1, id);
             stmt.executeUpdate();
@@ -635,208 +1189,77 @@ public class Database {
     }
     // </editor-fold>
     
-    // <editor-fold defaultstate="collapsed" desc="Metodos PedidoItem">
-    public void addPedidoItem(PedidoItem p)
-    {
-        try 
-        {
-
-            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO PedidoItem (ID_pedido, ID_item, quantidade, subtotal) VALUES (?, ?, ?, ?)");
-
-            stmt.setInt(1, p.pedido.ID);
-            stmt.setInt(2, p.item.ID);
-            stmt.setInt(3, p.Quantidade);
-            stmt.setDouble(4, p.Subtotal);
-
-            stmt.execute();
-            stmt.close();
-        } 
-        catch (SQLException e) 
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public PedidoItem getPedidoItem(int id)
-    {
-        try 
-        {
-            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM PedidoItem WHERE ID = ?");
-
-            stmt.setInt(1, id);
-            ResultSet resultado = stmt.executeQuery();
-
-            if (resultado.next())
-            {      
-                try
-                {
-                    return new PedidoItem(
-                            id, 
-                            getPedido(resultado.getInt("ID_pedido")), 
-                            getItem(resultado.getInt("ID_item")), 
-                            resultado.getInt("quantidade")
-                    );
-
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
-            resultado.close();
-            stmt.close();
-
-            return null;
-        } 
-        catch (SQLException e) 
-        {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public PedidoItem updatePedidoItem(PedidoItem p)
-    {
-        try 
-        {
-            PreparedStatement stmt = Conexao.prepareStatement("UPDATE PedidoItem SET ID_pedido = ?, ID_item = ?, quantidade = ?, subtotal = ? WHERE ID = ?");
-
-            stmt.setInt(1, p.pedido.ID);
-            stmt.setInt(2, p.item.ID);
-            stmt.setInt(3, p.Quantidade);
-            stmt.setDouble(4, p.Subtotal);
-            stmt.setInt(5, p.ID);
-
-            stmt.executeUpdate();
-            stmt.close();
-
-            return p;
-        } 
-        catch (SQLException e) 
-        {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public boolean  delPedidoItem(int id)
-    {
-        try 
-        {
-            PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM PedidoItem WHERE ID = ?");
-
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-
-            stmt.close();
-            return true;
-        } 
-        catch (SQLException e) 
-        {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-    // </editor-fold>
-    
-    // <editor-fold defaultstate="collapsed" desc="Metodos LogSistema">
-    public void addLog(LogSistema l)
-    {
-        try 
-        {
-
-            PreparedStatement stmt = Conexao.prepareStatement("INSERT INTO LogSistema (ID, ID_item, ID_funcionario, acao, Data) VALUES (?, ?, ?, ?)");
-
-            stmt.setInt(1, l.ID);
-            stmt.setInt(2, l.item.ID);
-            stmt.setInt(3, l.funcionario.ID);
-            stmt.setString(4, l.Acao);
-            stmt.setDate(5, l.getDateSQL());
-
-            stmt.execute();
-            stmt.close();
-        } 
-        catch (SQLException e) 
-        {
-            e.printStackTrace();
-        }
-    }
-
     public LogSistema getLog(int id)
     {
         try 
         {
-            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM PedidoItem WHERE ID = ?");
-
+            PreparedStatement stmt = Conexao.prepareStatement("SELECT * FROM LogSistema WHERE ID = ?");
+            
             stmt.setInt(1, id);
             ResultSet resultado = stmt.executeQuery();
-
+            
             if (resultado.next())
             {      
-                try
-                {
-                    return new LogSistema(
-                            id, 
-                            getItem(resultado.getInt("ID_item")), 
-                            getFuncionario(resultado.getInt("ID_funcionario")), 
-                            resultado.getString("Acao"), 
-                            resultado.getDate("Data")
-                    );
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+
+                return new LogSistema(
+                        resultado.getInt("ID"), 
+                        this.getItem(resultado.getInt("ID_item")), 
+                        this.getFuncionario(resultado.getInt("ID_funcionario")), 
+                        resultado.getString("acao"), 
+                        resultado.getTimestamp("data")
+                );
+
             }
             resultado.close();
             stmt.close();
-
+            
             return null;
         } 
         catch (SQLException e) 
         {
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-
+        
         return null;
     }
-
-    public LogSistema updateLog(LogSistema l)
+    
+    public LogSistema updateLog(LogSistema log)
     {
         try 
         {
-            PreparedStatement stmt = Conexao.prepareStatement("UPDATE LogSistema SET ID_item = ?, ID_funcionario = ?, acao = ?, Data = ? WHERE ID = ?");
-
-            stmt.setInt(1, l.item.ID);
-            stmt.setInt(2, l.funcionario.ID);
-            stmt.setString(3, l.Acao);
-            stmt.setDate(4, l.getDateSQL());
-
+            PreparedStatement stmt = Conexao.prepareStatement("UPDATE LogSistema "
+                    + "SET ID_funcionario = ?, ID_item = ?, acao = ? "
+                    + "WHERE ID = ?");
+            
+            stmt.setInt(1, log.Funcionario.ID);
+            stmt.setInt(2, (log.Item == null) ? null : log.Item.ID);
+            stmt.setString(3, log.Acao);
+            stmt.setInt(4, log.ID);
+            
             stmt.executeUpdate();
             stmt.close();
-
-            return l;
+            
+            return log;
         } 
         catch (SQLException e) 
         {
             e.printStackTrace();
         }
-
+        
         return null;
     }
-
-    public boolean  delLog(int id)
+    
+    public boolean delLog(int id)
     {
         try 
         {
             PreparedStatement stmt = Conexao.prepareStatement("DELETE FROM LogSistema WHERE ID = ?");
-
+            
             stmt.setInt(1, id);
             stmt.executeUpdate();
-
+            
             stmt.close();
             return true;
         } 
@@ -844,9 +1267,9 @@ public class Database {
         {
             e.printStackTrace();
         }
-
+        
         return false;
     }
-    // </editor-fold>
-      
+    
+    //</editor-fold> 
 }

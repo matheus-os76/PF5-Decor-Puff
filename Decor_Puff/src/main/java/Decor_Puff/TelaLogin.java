@@ -1,3 +1,7 @@
+package Decor_Puff;
+
+import Database.Database;
+import Database.DatabaseFaker;
 import javax.swing.JOptionPane;
 
 public class TelaLogin extends javax.swing.JFrame {
@@ -10,7 +14,27 @@ public class TelaLogin extends javax.swing.JFrame {
     public TelaLogin() {
         initComponents();
         this.setExtendedState(this.MAXIMIZED_BOTH);
-        this.setVisible(true);
+
+        Database x = new Database("Banco");
+            
+        try {
+            final int QUANTIDADE_CLIENTES = 0;
+            final int QUANTIDADE_FUNCTIONARIO = 0;
+            final int QUANTIDADE_ITENS = 0;
+            final int QUANTIDADE_PEDIDOS = 0;
+            final int QUANTIDADE_LOG = 0;
+            
+            DatabaseFaker DBF = new DatabaseFaker(x);
+            
+            for (int i = 0; i < QUANTIDADE_CLIENTES; i++) x.addCliente(DatabaseFaker.Cliente());
+            for (int i = 0; i < QUANTIDADE_FUNCTIONARIO; i++) x.addFuncionario(DatabaseFaker.Funcionario());
+            for (int i = 0; i < QUANTIDADE_ITENS; i++) x.addItem(DatabaseFaker.Item());
+            for (int i = 0; i < QUANTIDADE_PEDIDOS; i++) x.addPedido(DBF.Pedido());
+            for (int i = 0; i < QUANTIDADE_LOG; i++) x.addLog(DBF.LogSistema());
+            
+        } catch (Exception ex) {
+            System.getLogger(TelaLogin.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
     }
 
     /**
